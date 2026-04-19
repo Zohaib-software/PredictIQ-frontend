@@ -1,0 +1,304 @@
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 1.5rem;
+}
+
+.headerTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btnSelectMode {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-accent);
+  background: transparent;
+  color: var(--color-accent);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.btnSelectMode:hover:not(:disabled) {
+  background: rgba(55, 193, 165, 0.12);
+  color: var(--color-accent-hover, var(--color-accent));
+}
+
+.btnSelectMode:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.selectionModeActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+.bulkBarMeta {
+  min-width: 0;
+  font-size: 0.875rem;
+  color: var(--color-secondary-text);
+}
+
+.btnCancelSelect {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-light);
+  background: transparent;
+  color: var(--color-secondary-text);
+  cursor: pointer;
+}
+
+.btnCancelSelect:hover {
+  border-color: var(--color-accent);
+  color: var(--color-primary-text);
+}
+
+.btnBulkDelete {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  background: #e74c3c;
+  color: #fff;
+  transition: opacity var(--transition-fast);
+}
+
+.btnBulkDelete:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.btnBulkDelete:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-primary-text);
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--color-secondary-text);
+  margin-bottom: 0.75rem;
+}
+
+.markAllBtn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  background: transparent;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.markAllBtn:hover {
+  background: var(--color-accent);
+  color: var(--color-background);
+}
+
+.markAllBtn:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.item {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: background var(--transition-fast);
+}
+
+.item:hover {
+  background: rgba(55, 193, 165, 0.08);
+}
+
+/** Unread tint on the whole card (message + chart period + CTA row). */
+.item.itemUnread {
+  background: rgba(55, 193, 165, 0.06);
+}
+
+.item.itemUnread:hover {
+  background: rgba(55, 193, 165, 0.12);
+}
+
+.itemRow {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.selectCell {
+  flex: 0 0 2.75rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem 0.25rem 0.5rem;
+  border-right: 1px solid var(--color-border-light);
+}
+
+.selectCell input[type='checkbox'] {
+  width: 1.05rem;
+  height: 1.05rem;
+  cursor: pointer;
+  accent-color: var(--color-accent);
+}
+
+.itemMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemBtn {
+  display: block;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.itemStatic {
+  display: block;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.periodHint {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-secondary-text);
+  margin-bottom: 0.35rem;
+  font-style: italic;
+}
+
+.itemBtn:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
+}
+
+.itemUnread .itemTitle {
+  font-weight: 600;
+}
+
+.itemTitle {
+  display: block;
+  font-size: 1rem;
+  color: var(--color-primary-text);
+  margin-bottom: 0.35rem;
+}
+
+.itemMessage {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--color-secondary-text);
+  margin-bottom: 0.35rem;
+  line-height: 1.4;
+}
+
+.itemTime {
+  font-size: 0.8rem;
+  color: var(--color-secondary-text);
+}
+
+.itemChartLinkWrap {
+  padding: 0.35rem 1.25rem 0.85rem;
+  background: transparent;
+}
+
+.viewChartCta {
+  display: inline-block;
+  padding: 0.5rem 0.95rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-accent);
+  border-radius: var(--radius-sm, 6px);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    background var(--transition-fast, 0.15s ease),
+    box-shadow var(--transition-fast, 0.15s ease),
+    transform var(--transition-fast, 0.15s ease);
+}
+
+.viewChartCta:hover {
+  background: var(--color-accent-hover);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.viewChartCta:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+}
+
+.viewChartCta:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-secondary-text);
+  font-size: 0.95rem;
+}
+
+.toast {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  padding: 0.65rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-primary-text);
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}

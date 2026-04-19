@@ -1,0 +1,157 @@
+.wrapper {
+  width: 100%;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.funnel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+}
+
+.segment {
+  width: 100%;
+  min-height: 4.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 0.75rem;
+  transition: width 0.25s ease;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-align: center;
+  max-width: 100%;
+}
+
+.segment:first-child {
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.segment:last-child {
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.segment:only-child {
+  border-radius: var(--radius-md);
+}
+
+.segmentLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.25;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  max-width: 100%;
+}
+
+.segmentValue {
+  font-size: clamp(0.9rem, 2.5vw, 1.15rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 0.2rem;
+  max-width: 100%;
+  cursor: default;
+}
+
+.segmentRatio {
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0.92;
+  margin-top: 0.25rem;
+  line-height: 1.2;
+}
+
+.funnelSummary {
+  font-size: 0.76rem;
+  color: var(--color-secondary-text);
+  padding: 0 0.25rem;
+  max-width: 42rem;
+}
+
+.funnelSummaryTitle {
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 0.35rem;
+}
+
+.funnelSummarySubtitle {
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0.65rem 0 0.3rem;
+  font-size: 0.78rem;
+}
+
+.funnelSummaryHint {
+  font-weight: 400;
+  color: var(--color-secondary-text);
+}
+
+.funnelSummaryTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.funnelSummaryTable thead th {
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-secondary-text);
+  text-align: left;
+  padding: 0.2rem 0.5rem 0.35rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
+}
+
+.funnelSummaryTable thead th:nth-child(2),
+.funnelSummaryTable thead th:nth-child(3) {
+  text-align: right;
+  padding-left: 0.5rem;
+  padding-right: 0;
+}
+
+.funnelSummaryTable tbody th {
+  font-weight: 500;
+  text-align: left;
+  padding: 0.25rem 0.5rem 0.25rem 0;
+  vertical-align: top;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
+}
+
+.funnelSummaryTable tbody td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  padding: 0.25rem 0 0.25rem 0.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
+  white-space: nowrap;
+}
+
+.funnelSummaryTable tbody tr:last-child th,
+.funnelSummaryTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Teal & green: white label */
+.segment:nth-child(1) .segmentLabel,
+.segment:nth-child(1) .segmentValue,
+.segment:nth-child(1) .segmentRatio,
+.segment:nth-child(2) .segmentLabel,
+.segment:nth-child(2) .segmentValue,
+.segment:nth-child(2) .segmentRatio {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* Last band (net): dark gray background, light text */
+.segment:nth-child(3) .segmentLabel,
+.segment:nth-child(3) .segmentValue,
+.segment:nth-child(3) .segmentRatio {
+  color: #f9fafb;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}

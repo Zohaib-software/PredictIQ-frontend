@@ -1,0 +1,122 @@
+.hero {
+  padding: 3rem 0 4rem;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.content {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 3rem;
+}
+
+.title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  color: var(--color-primary-text);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-size: 1.15rem;
+  color: var(--color-secondary-text);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.welcome {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: center;
+}
+
+.welcomeText {
+  font-size: 1.1rem;
+  color: var(--color-primary-text);
+  margin-bottom: 0.25rem;
+}
+
+.welcomeSub {
+  font-size: 0.95rem;
+  color: var(--color-secondary-text);
+}
+
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.ctaPrimary {
+  min-width: 180px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+.card {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  text-align: left;
+  transition: transform var(--transition-base), box-shadow var(--transition-base),
+    border-color var(--transition-base);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(46, 46, 46, 0.08);
+  border-color: rgba(55, 193, 165, 0.25);
+}
+
+.cardIcon {
+  font-size: 1.75rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.cardTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-primary-text);
+  margin-bottom: 0.5rem;
+}
+
+.cardText {
+  font-size: 0.95rem;
+  color: var(--color-secondary-text);
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding: 2rem 0 3rem;
+  }
+  .cta {
+    flex-direction: column;
+  }
+  .cta a {
+    width: 100%;
+  }
+  .cta .ctaPrimary {
+    width: 100%;
+  }
+}

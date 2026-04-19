@@ -1,0 +1,68 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-primary-text);
+}
+
+.required {
+  color: var(--color-error);
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--color-input-text) !important;
+  -webkit-text-fill-color: var(--color-input-text) !important;
+  caret-color: var(--color-input-text);
+  opacity: 1;
+  background-color: var(--color-input-bg);
+  border: 2px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.input::placeholder {
+  color: var(--color-secondary-text);
+  opacity: 0.8;
+}
+
+.input:hover:not(:disabled) {
+  border-color: var(--color-border);
+}
+
+.input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(55, 193, 165, 0.2);
+}
+
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.input:-webkit-autofill:focus,
+.input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--color-input-text);
+  caret-color: var(--color-input-text);
+  box-shadow: 0 0 0 1000px var(--color-input-bg) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+.inputError {
+  border-color: var(--color-error);
+}
+
+.inputError:focus {
+  box-shadow: 0 0 0 3px rgba(194, 69, 60, 0.2);
+}
+
+.error {
+  font-size: 0.85rem;
+  color: var(--color-error);
+  margin: 0;
+}

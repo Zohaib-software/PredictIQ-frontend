@@ -1,0 +1,317 @@
+/* PredictIQ Design System - Theme Variables */
+:root {
+  /* Primary & text */
+  --color-primary-text: #2E2E2E;
+  --color-input-text: #000000;
+  --color-secondary-text: #6A6A6A;
+  --color-background: #FBFBFA;
+  --color-accent: #37C1A5;
+  --color-accent-hover: #2da892;
+  --color-accent-active: #259680;
+  --color-accent-warm: #EACBB5;
+  --color-success: #2E8B57;
+  --color-error: #C2453C;
+  /** Solid red for destructive buttons (e.g. row Delete on Data page, Delete upload) */
+  --color-danger-button: #e74c3c;
+  --color-danger-button-hover: #c0392b;
+  /* UI */
+  --color-border: #6A6A6A;
+  --color-border-light: rgba(106, 106, 106, 0.25);
+  --color-card-bg: #ffffff;
+  --color-input-bg: #ffffff;
+  --color-focus-ring: #37C1A5;
+  /* Charts: all linear / trend projection overlays (dashed) */
+  --color-chart-projection: #9333EA;
+  /* OLS / linear regression on scatters (day mode default) */
+  --color-chart-linear-trend: #000000;
+  /* Typography */
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* Spacing & radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  /* Motion */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 350ms ease;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-primary-text);
+  line-height: 1.5;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+input,
+textarea,
+select,
+option {
+  color: var(--color-input-text);
+  caret-color: var(--color-input-text);
+  -webkit-text-fill-color: var(--color-input-text);
+}
+
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: var(--color-secondary-text);
+  -webkit-text-fill-color: var(--color-secondary-text);
+  opacity: 1;
+}
+
+/* Prevent accidental “drag the UI” interactions (e.g. dragging the logo/link) */
+a,
+img,
+svg {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(106, 106, 106, 0.55) rgba(255, 255, 255, 0.04);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(106, 106, 106, 0.55);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(55, 193, 165, 0.55);
+  background-clip: content-box;
+}
+
+#root {
+  overflow: hidden;
+}
+
+/* Focus visible for accessibility */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0.5rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: var(--color-accent);
+  color: var(--color-background);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: top var(--transition-base);
+}
+
+.skip-link:focus {
+  top: 0.5rem;
+}
+
+/* Utility for screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/**
+ * Shared buttons — aligned with SettingsPage:
+ * - `.dangerBtn` (Delete account) for teal primary + hover
+ * - `.pq-btn-danger-red` row/upload delete — red; hover stays red (darker)
+ * - `.actionBtn` (2FA backup Copy / Download) for outline + hover
+ */
+
+/* SettingsPage `.dangerBtn` — solid accent, dark label, teal glow on hover */
+.pq-btn-danger-zone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #0b1b17;
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pq-btn-danger-zone:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+  box-shadow: 0 0 0 3px rgba(55, 193, 165, 0.25);
+}
+
+.pq-btn-danger-zone:focus-visible {
+  box-shadow: 0 0 0 3px rgba(55, 193, 165, 0.35);
+}
+
+.pq-btn-danger-zone:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.pq-btn-danger-zone:disabled:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: none;
+}
+
+/* Red destructive — stays red on hover (darker shade + subtle red focus ring) */
+.pq-btn-danger-red {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: var(--color-danger-button);
+  border: 1px solid var(--color-danger-button);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pq-btn-danger-red:hover:not(:disabled) {
+  background: var(--color-danger-button-hover);
+  border-color: var(--color-danger-button-hover);
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.28);
+}
+
+.pq-btn-danger-red:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.pq-btn-danger-red:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.pq-btn-danger-red:disabled:hover {
+  background: var(--color-danger-button);
+  border-color: var(--color-danger-button);
+  box-shadow: none;
+}
+
+/* SettingsPage `.actionBtn` — 2FA backup Copy / Download */
+.pq-btn-backup-action {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-primary-text);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.pq-btn-backup-action:hover:not(:disabled) {
+  background: var(--color-border-light);
+}
+
+.pq-btn-backup-action:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.pq-btn-backup-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.pq-btn-backup-action:disabled:hover {
+  background: transparent;
+}
+
+.pq-btn-backup-action--compact {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.55rem;
+}
+
+/* Data / Transactions table row actions */
+.pq-btn-danger-zone.pq-btn--table-action,
+.pq-btn-danger-red.pq-btn--table-action {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+/* CSV upload — Previous uploads delete */
+.pq-btn-danger-red.pq-btn--upload-history {
+  padding: 0.3rem 0.55rem;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+/* App setting: General settings → Reduced motion (attribute on `#root`; see ReducedMotionContext) */
+#root[data-reduced-motion='true'] {
+  /*
+   * Use 1ms (not sub-ms): Edge/Chromium can mis-paint flex + width transitions when the
+   * duration token is effectively zero (Chromium/Edge can mis-paint flex + width transitions).
+   */
+  --transition-fast: 1ms;
+  --transition-base: 1ms;
+  --transition-slow: 1ms;
+  scroll-behavior: auto;
+}
+
+/* Primary nav sidebars use `transition` on width/transform; instant tokens can mis-paint. */
+#root[data-reduced-motion='true'] aside {
+  transition: none;
+}
+
+/*
+ * Avoid a universal `*` rule here: forcing `transition-duration` / `animation-duration`
+ * on every node breaks flex/grid sizing and libraries (e.g. Framer Motion, Recharts) in
+ * subtle ways. Motion is handled by MotionConfig + chart `isAnimationActive`; transitions
+ * use the shortened design tokens above wherever components use var(--transition-*).
+ */

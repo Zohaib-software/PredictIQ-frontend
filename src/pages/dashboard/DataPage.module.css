@@ -1,0 +1,790 @@
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.pageHeader {
+  margin-bottom: 1.5rem;
+}
+
+.pageTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-primary-text);
+  margin-bottom: 0.25rem;
+}
+
+.pageSubtitle {
+  font-size: 0.95rem;
+  color: var(--color-secondary-text);
+}
+
+/* Filters */
+.filtersBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+
+.filtersBarEmbedded {
+  margin-bottom: 0;
+  padding: 0.9rem 1rem 0.8rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border-light);
+  border-radius: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.periodGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.periodGroupLabel {
+  font-size: 0.75rem;
+  color: var(--color-secondary-text);
+  line-height: 1.2;
+  padding-bottom: 0.45rem;
+}
+
+.periodToggle {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.periodBtn {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-secondary-text);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.periodBtn:hover {
+  color: var(--color-primary-text);
+  border-color: var(--color-accent);
+}
+
+.periodBtnActive {
+  background: var(--color-accent);
+  color: var(--color-card-bg);
+  border-color: var(--color-accent);
+}
+
+.dateRange {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.recordsFilterExtras {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 1.25rem;
+}
+
+.recordsNotesSearchInput {
+  min-width: 200px;
+  width: min(100%, 280px);
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-card-bg);
+  color: var(--color-primary-text);
+  font-size: 0.9rem;
+}
+
+.recordsNotesSearchInput:hover {
+  border-color: var(--color-accent);
+}
+
+.recordsNotesSearchInput::placeholder {
+  color: var(--color-secondary-text);
+  opacity: 0.88;
+}
+
+.filterSelectGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.dateRangeLabel {
+  font-size: 0.75rem;
+  color: var(--color-secondary-text);
+  line-height: 1.2;
+  padding-bottom: 0.2rem;
+}
+
+.dateRange input {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-card-bg);
+  color: var(--color-primary-text);
+  font-size: 0.9rem;
+}
+
+.filterSelect {
+  min-width: 190px;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-card-bg);
+  color: var(--color-primary-text);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.filterSelect:hover {
+  border-color: var(--color-accent);
+}
+
+/* Width fits label + horizontal padding; fixed height to align with date inputs. */
+.resetFilters {
+  position: relative;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  max-width: 100%;
+  height: 34px;
+  margin: 0;
+  padding: 0 0.65rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1;
+  font-family: inherit;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-card-bg);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.resetFilters:hover {
+  border-color: var(--color-accent-hover, var(--color-accent));
+  background: var(--color-accent-hover, var(--color-accent));
+  color: var(--color-card-bg);
+}
+
+.resetFiltersSuccess:hover,
+.resetFiltersSuccess:focus-visible {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-card-bg);
+}
+
+.resetFilters:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Same pattern as Settings backup Copy / Download (label ↔ tick). */
+.resetFiltersLabel,
+.resetFiltersTick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.resetFiltersLabel {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.resetFiltersLabelHidden {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.resetFiltersTick {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(0.75);
+  pointer-events: none;
+}
+
+.resetFiltersTickVisible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Right-aligned container for reset + optional extras (e.g. sort). */
+.filtersBarRightControls {
+  margin-left: auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* KPI cards */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .kpiGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpiCard {
+  padding: 1rem 1.25rem;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+
+.kpiLabel {
+  font-size: 0.85rem;
+  color: var(--color-secondary-text);
+  margin-bottom: 0.35rem;
+}
+
+.kpiValue {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-primary-text);
+}
+
+.kpiMarginGreen {
+  color: #2ecc71;
+}
+
+.kpiMarginAmber {
+  color: #f39c12;
+}
+
+.kpiMarginRed {
+  color: #e74c3c;
+}
+
+/* Chart */
+.chartSection {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+
+.chartTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-primary-text);
+  margin: 0 0 0.35rem;
+}
+
+.chartSubtitle {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  font-weight: 400;
+  color: var(--color-secondary-text);
+}
+
+/* Chart + trend footer: do not fix outer height — footer must stack below the plot (was overlapping Records). */
+.chartWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+
+.chartPlot {
+  position: relative;
+  height: 300px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.chartEmpty {
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-secondary-text);
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 1rem;
+}
+
+.chartSkeleton {
+  height: 300px;
+  background: linear-gradient(90deg, var(--color-border-light) 25%, rgba(255,255,255,0.05) 50%, var(--color-border-light) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Table — records header + optional selection mode */
+.recordsHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  padding: 1rem 1rem 0.75rem;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.recordsTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-primary-text);
+  margin: 0;
+}
+
+.btnSelectMode {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-accent);
+  background: transparent;
+  color: var(--color-accent);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.btnSelectMode:hover {
+  background: rgba(55, 193, 165, 0.12);
+  color: var(--color-accent-hover, var(--color-accent));
+}
+
+.btnSelectMode:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.selectionModeActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+.bulkBarMeta {
+  min-width: 0;
+  font-size: 0.875rem;
+  color: var(--color-secondary-text);
+}
+
+.btnCancelSelect {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-light);
+  background: transparent;
+  color: var(--color-secondary-text);
+  cursor: pointer;
+}
+
+.btnCancelSelect:hover {
+  border-color: var(--color-accent);
+  color: var(--color-primary-text);
+}
+
+.btnBulkDelete {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  background: #e74c3c;
+  color: #fff;
+  transition: opacity var(--transition-fast);
+}
+
+.btnBulkDelete:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.btnBulkDelete:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tableCheckboxCol {
+  width: 2.75rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.tableCheckboxCol input[type='checkbox'] {
+  width: 1.05rem;
+  height: 1.05rem;
+  cursor: pointer;
+  accent-color: var(--color-accent);
+}
+
+.tableSection {
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+
+.uploadSection {
+  margin-bottom: 1rem;
+}
+
+.recordsSubtext {
+  font-size: 0.75rem;
+  color: var(--color-secondary-text);
+  margin: 0 0 0.75rem;
+  padding: 0.6rem 1rem 0 1rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.dataTable th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: var(--color-secondary-text);
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-card-bg);
+}
+
+.dataTable td {
+  padding: 0.65rem 1rem;
+  color: var(--color-primary-text);
+  border-bottom: 1px solid var(--color-border-light);
+  vertical-align: middle;
+}
+
+.dataTable tbody tr:hover {
+  background: rgba(55, 193, 165, 0.06);
+}
+
+.marginGreen { color: #2ecc71; }
+.marginAmber { color: #f39c12; }
+.marginRed { color: #e74c3c; }
+
+/* Constrain notes; td must not use display:flex (breaks row borders / row height). */
+.tableNotesCell {
+  max-width: 12rem;
+  width: 12rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Single-line ellipsis — keeps row height uniform. Full text: native title on span. */
+.tableNotesClamp {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: var(--color-secondary-text);
+}
+
+/* Table cell stays table-cell; flex lives on inner wrapper so borders span the full row. */
+.tableActionsCell {
+  width: 1%;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.actionsCell {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Row Edit / Delete: global classes `pq-btn-danger-zone`, `pq-btn-danger-red` (index.css) */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-border-light);
+  font-size: 0.9rem;
+  color: var(--color-secondary-text);
+}
+
+.paginationMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.1rem;
+}
+
+.rowsPerPage {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--color-secondary-text);
+  font-size: 0.9rem;
+}
+
+.rowsPerPage span {
+  font-weight: 600;
+  color: var(--color-primary-text);
+}
+
+.rowsPerPage select {
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-card-bg);
+  color: var(--color-primary-text);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.rowsPerPage select:hover {
+  border-color: var(--color-accent);
+}
+
+.paginationBtns {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.paginationBtns button {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-card-bg);
+  color: var(--color-primary-text);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.paginationBtns button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationBtns button:not(:disabled):hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* Modal overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modalTitle {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-primary-text);
+  margin-bottom: 1rem;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-secondary-text);
+  margin-bottom: 0.35rem;
+}
+
+.formGroup input,
+.formGroup textarea {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-card-bg);
+  color: var(--color-primary-text);
+  font-size: 0.9rem;
+}
+
+.formGroup textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+}
+
+.modalActions button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: none;
+}
+
+.btnCancel {
+  background: transparent;
+  border: 1px solid var(--color-border-light);
+  color: var(--color-secondary-text);
+}
+
+.btnSave {
+  background: var(--color-accent);
+  color: var(--color-card-bg);
+}
+
+/* Delete confirm popup */
+.deleteConfirm {
+  max-width: 360px;
+}
+
+.deleteConfirm p {
+  margin-bottom: 1rem;
+  color: var(--color-primary-text);
+  font-size: 0.95rem;
+}
+
+.btnConfirmDelete {
+  background: #e74c3c;
+  color: white;
+}
+
+/* Error state */
+.errorBox {
+  padding: 1rem;
+  background: rgba(194, 69, 60, 0.12);
+  border: 1px solid rgba(194, 69, 60, 0.3);
+  border-radius: var(--radius-sm);
+  color: var(--color-error);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.btnRetry {
+  padding: 0.4rem 0.75rem;
+  background: var(--color-error);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  color: var(--color-primary-text);
+  font-size: 0.9rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 200;
+  animation: toastIn 0.25s ease;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Skeleton for initial load */
+.skeletonCard {
+  height: 80px;
+  background: linear-gradient(90deg, var(--color-border-light) 25%, rgba(255,255,255,0.05) 50%, var(--color-border-light) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+.tableSkeleton {
+  height: 200px;
+  background: linear-gradient(90deg, var(--color-border-light) 25%, rgba(255,255,255,0.05) 50%, var(--color-border-light) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+  margin: 1rem;
+}

@@ -1,0 +1,48 @@
+.tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  padding: 0.3rem;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+
+.tabButton {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-secondary-text);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.8rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.tabButton:hover {
+  background: rgba(55, 193, 165, 0.08);
+  color: var(--color-primary-text);
+}
+
+.tabButtonActive {
+  background: rgba(55, 193, 165, 0.14);
+  color: var(--color-accent);
+  border-color: rgba(55, 193, 165, 0.3);
+}
+
+.costAnalysisRowOne {
+  height: 520px;
+}
+
+.rowOneCellFill {
+  height: 100%;
+  min-height: 0;
+}
+
+@media (max-width: 768px) {
+  .costAnalysisRowOne {
+    height: auto;
+  }
+}

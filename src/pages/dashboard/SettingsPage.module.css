@@ -1,0 +1,976 @@
+.shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  background: var(--color-background);
+  overflow: hidden;
+}
+
+.sidebar {
+  height: 100vh;
+  background: var(--color-card-bg);
+  border-right: 1px solid var(--color-border-light);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 260px;
+  flex-shrink: 0;
+  transition: width var(--transition-base);
+}
+
+.sidebarOpen {
+  width: 260px;
+}
+
+.sidebarClosed {
+  width: 72px;
+}
+
+.sidebarHead {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--color-border-light);
+  justify-content: space-between;
+}
+
+.brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebarClosed .brand {
+  display: none;
+}
+
+.sidebarToggle {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  color: var(--color-secondary-text);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebarToggle:hover {
+  background: var(--color-border-light);
+  color: var(--color-primary-text);
+}
+
+.sidebarToggle:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.sidebarBody {
+  padding: 1rem 0.75rem;
+  flex: 1;
+}
+
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.navButtonReset {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.navText {
+  display: inline-block;
+}
+
+.sidebarClosed .navText {
+  display: none;
+}
+
+.sidebarFooter {
+  padding: 1rem 0.75rem;
+  border-top: 1px solid var(--color-border-light);
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.content {
+  width: 100%;
+  display: grid;
+  gap: 0.75rem;
+  max-width: 1320px;
+  margin: auto;
+}
+
+.panel {
+  width: 100%;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  background: var(--color-card-bg);
+  overflow: hidden;
+}
+
+.panelHeader {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--color-border-light);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+.panelTitle {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--color-primary-text);
+}
+
+.panelSubtitle {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--color-secondary-text);
+  line-height: 1.45;
+}
+
+.panelBody {
+  padding: 0.9rem 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.section {
+  background: transparent;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: 0.85rem 0.95rem;
+}
+
+.sectionFlat {
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+
+.sectionFlat + .sectionFlat {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.sectionTitle {
+  margin: 0 0 0.45rem;
+  font-size: 1rem;
+  color: var(--color-primary-text);
+}
+
+.sectionText {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--color-secondary-text);
+}
+
+.sectionText + .sectionText {
+  margin-top: 0.5rem;
+}
+
+/* Professional settings rows (Stripe/GitHub-style) */
+.controlList {
+  margin-top: 0;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-card-bg);
+}
+
+.controlRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  padding: 1rem 1rem;
+  align-items: center;
+}
+
+.controlRow + .controlRow {
+  border-top: 1px solid var(--color-border-light);
+}
+
+.settingRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  padding: 1.05rem 1rem;
+  align-items: center;
+}
+
+.settingRow + .settingRow {
+  border-top: 1px solid var(--color-border-light);
+}
+
+.settingRowMuted {
+  background: rgba(127, 127, 127, 0.04);
+}
+
+.controlCopy {
+  min-width: 0;
+}
+
+.controlTitle {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--color-primary-text);
+  line-height: 1.25;
+}
+
+.controlTitleDanger {
+  color: var(--color-accent);
+}
+
+.controlText {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  color: var(--color-secondary-text);
+  line-height: 1.45;
+}
+
+.controlCta {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* One card: same shell as .controlList; red header is the top band inside it */
+.dangerZone {
+  margin-top: 1rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-card-bg);
+  padding: 0;
+}
+
+/* Solid red-600 (#dc2626), flush to card edges */
+.dangerZoneHeader {
+  padding: 1rem 1rem;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  background: #dc2626;
+}
+
+.dangerZoneHeader .dangerZoneTitle {
+  color: #ffffff;
+}
+
+.dangerZoneHeader .dangerZoneSubtitle {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.twoFactorDisableForm {
+  margin-top: 0.85rem;
+}
+
+.dangerZoneTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-primary-text);
+}
+
+.dangerZoneSubtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+  color: var(--color-secondary-text);
+  line-height: 1.45;
+}
+
+.dangerZone .controlList {
+  margin-top: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.infoLabel {
+  margin: 0 0 0.25rem;
+  font-size: 0.76rem;
+  color: var(--color-secondary-text);
+}
+
+.infoValue {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--color-primary-text);
+  word-break: break-word;
+}
+
+.passwordForm {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.passwordGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.passwordGrid > :last-child {
+  grid-column: span 2;
+}
+
+.helperText {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-secondary-text);
+}
+
+.passwordActions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.securityActions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.twoFactorSetupPanel,
+.twoFactorEnabledPanel,
+.backupCodesPanel {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: rgba(127, 127, 127, 0.03);
+  padding: 0.9rem;
+}
+
+.twoFactorEnabledPanel {
+  display: grid;
+  gap: 0.9rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.twoFactorRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+.divider {
+  height: 1px;
+  width: 100%;
+  background: var(--color-border-light);
+}
+
+.twoFactorDangerArea {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.twoFactorSetupPanel {
+  display: grid;
+  grid-template-columns: minmax(340px, 1.4fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.twoFactorEmbeddedFeedback {
+  grid-column: 1 / -1;
+  margin-bottom: 0.1rem;
+}
+
+.twoFactorSetupMedia {
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.twoFactorStepHeaderRow {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.55rem;
+}
+
+.twoFactorStepTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-secondary-text);
+}
+
+.twoFactorQr {
+  width: 150px;
+  height: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+  background: #fff;
+  padding: 0.5rem;
+}
+
+.twoFactorSetupStep1Row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.twoFactorSetupStep1Text {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.twoFactorSetupBody,
+.twoFactorVerifyForm,
+.twoFactorDisableForm {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.twoFactorSetupBody {
+  border-left: 1px solid var(--color-border-light);
+  padding-left: 1rem;
+}
+
+.twoFactorSetupBody > .badge {
+  width: fit-content;
+}
+
+.manualEntryKey {
+  display: inline-block;
+  margin-top: 0.25rem;
+  font-family: monospace;
+  font-size: 0.88rem;
+  word-break: break-all;
+}
+
+.backupCodesPanel {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.backupCodesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.backupCode {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.55rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-light);
+  background: var(--color-background);
+  color: var(--color-primary-text);
+}
+
+.twoFactorHeaderRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 0.35rem;
+}
+
+.twoFactorDash {
+  color: var(--color-secondary-text);
+  font-weight: 750;
+  font-size: 0.95rem;
+  margin-top: 0;
+  line-height: 1;
+}
+
+.actionBtn {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-primary-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.backupActionBtnSuccess {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #0b1b17;
+}
+
+.actionBtn.backupActionBtnSuccess:hover,
+.actionBtn.backupActionBtnSuccess:focus-visible {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #0b1b17;
+}
+
+.backupActionBtn {
+  position: relative;
+}
+
+.backupActionLabel,
+.backupActionTick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.backupActionLabel {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.backupActionLabelHidden {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.backupActionTick {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(0.75);
+  pointer-events: none;
+}
+
+.backupActionTickVisible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.actionBtn:hover {
+  background: var(--color-border-light);
+}
+
+
+.primaryBtn {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #0b1b17;
+}
+
+.primaryBtn:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.primaryBtn:disabled:hover {
+  background: var(--color-accent);
+}
+
+.actionBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.actionBtn:disabled:hover {
+  background: transparent;
+}
+
+.dangerBtn {
+  color: #0b1b17;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: none;
+}
+
+.dangerBtn:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+  box-shadow: 0 0 0 3px rgba(55, 193, 165, 0.25);
+}
+
+.dangerBtn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(55, 193, 165, 0.35);
+}
+
+.checkboxRow {
+  margin-top: 0.85rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  color: var(--color-primary-text);
+  font-size: 0.9rem;
+}
+
+.checkboxRow input {
+  margin-top: 0.2rem;
+}
+
+.warning {
+  margin: 0.7rem 0 0;
+  color: var(--color-error);
+  font-size: 0.88rem;
+}
+
+.feedback {
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.9rem;
+  font-size: 0.9rem;
+}
+
+.feedbackSuccess {
+  background: rgba(55, 193, 165, 0.12);
+  border: 1px solid rgba(55, 193, 165, 0.35);
+  color: var(--color-primary-text);
+}
+
+.feedbackError {
+  background: rgba(194, 69, 60, 0.12);
+  border: 1px solid rgba(194, 69, 60, 0.35);
+  color: var(--color-primary-text);
+}
+
+.confirmInputWrap {
+  margin-bottom: 1rem;
+}
+
+.confirmInput {
+  width: 100%;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.7rem;
+  background: var(--color-background);
+  color: var(--color-input-text);
+  font-size: 0.9rem;
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Containing block for the visually hidden input (absolute without this uses the viewport). */
+  position: relative;
+}
+
+.switch input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.switchTrack {
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(127, 127, 127, 0.28);
+  border: 1px solid var(--color-border-light);
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.switchThumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--color-card-bg);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transform: translateX(0);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+/* On-state from React (controlled checkboxes can desync from :checked + sibling for paint) */
+.switchTrackOn {
+  background: rgba(55, 193, 165, 0.55);
+  border-color: rgba(55, 193, 165, 0.55);
+}
+
+.switchTrackOn .switchThumb {
+  transform: translateX(18px);
+}
+
+.switch input:focus-visible + .switchTrack {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.switch input:disabled + .switchTrack {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.notificationPrefsFeedback {
+  margin-bottom: 0.75rem;
+}
+
+.notificationChannelIntro {
+  margin: 1rem 0 0.5rem;
+  padding: 0 0.15rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--color-secondary-text);
+}
+
+.notificationGroupHeader {
+  padding: 0.75rem 1rem 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-secondary-text);
+  background: rgba(127, 127, 127, 0.06);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.notificationGroupHeader:first-child {
+  border-top: none;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border-light);
+  background: rgba(127, 127, 127, 0.08);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-secondary-text);
+}
+
+.badgeSuccess {
+  background: rgba(55, 193, 165, 0.18);
+  border-color: rgba(55, 193, 165, 0.45);
+  color: var(--color-primary-text);
+}
+
+.stepBadge {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #0b1b17;
+}
+
+.sessionList {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: rgba(127, 127, 127, 0.02);
+}
+
+.sessionCard {
+  border: none;
+  border-radius: 0;
+  padding: 0.95rem 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: start;
+  background: transparent;
+}
+
+.sessionCard + .sessionCard {
+  border-top: 1px solid var(--color-border-light);
+}
+
+.sessionInfo {
+  min-width: 0;
+}
+
+.sessionHeaderRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.sessionTitle {
+  margin: 0;
+  font-size: 0.98rem;
+  color: var(--color-primary-text);
+}
+
+.sessionBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(55, 193, 165, 0.14);
+  border: 1px solid rgba(55, 193, 165, 0.35);
+  color: var(--color-primary-text);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.sessionMeta {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-secondary-text);
+}
+
+.sessionAgent {
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+  color: var(--color-secondary-text);
+  word-break: break-word;
+}
+
+.sessionActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 720px) {
+  .shell {
+    display: block;
+  }
+
+  .sidebar {
+    height: auto;
+    width: 100%;
+  }
+
+  .sidebarNav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .navButtonReset {
+    width: auto;
+  }
+
+  .main {
+    padding: 1rem;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .passwordGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .twoFactorGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .twoFactorSetupPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .twoFactorSetupMedia {
+    width: 100%;
+    max-width: 220px;
+  }
+
+  .twoFactorSetupBody {
+    border-left: none;
+    padding-left: 0;
+  }
+
+  .twoFactorSetupStep1Row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .twoFactorQr {
+    width: 100%;
+    max-width: 220px;
+  }
+
+  .backupCodesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .passwordGrid > :last-child {
+    grid-column: auto;
+  }
+
+  .controlRow {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .controlCta {
+    justify-content: flex-start;
+  }
+
+  .settingRow {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .sessionCard {
+    grid-template-columns: 1fr;
+  }
+
+  .sessionActions {
+    justify-content: flex-start;
+  }
+
+  .sidebarToggle {
+    display: none;
+  }
+}
+
+/* Settings shell: sidebar width is on `aside` (global rule in index.css); toggle is a button. */
+:global(#root[data-reduced-motion='true']) .sidebarToggle {
+  transition: none;
+}

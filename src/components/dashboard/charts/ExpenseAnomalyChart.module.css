@@ -1,0 +1,18 @@
+.tooltipCardWrap {
+  display: inline-block;
+  max-width: min(360px, 94vw);
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.tooltipNoteBelow {
+  padding: 0 10px 10px;
+}
+
+.noteText {
+  font-size: 0.82rem;
+  font-style: italic;
+  color: var(--color-secondary-text);
+  margin: 0.5rem 0 0.65rem;
+  line-height: 1.4;
+}

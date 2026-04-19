@@ -1,0 +1,32 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.chartArea {
+  width: 100%;
+  height: 440px;
+  min-height: 440px;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Recharts wraps the surface in .recharts-responsive-container — fill slot with no extra inset */
+.chartArea :global(.recharts-responsive-container) {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100%;
+}
+
+.chartArea :global(.recharts-wrapper) {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Avoid padding on the surface: Recharts already accounts for margins; extra padding skews vertical balance */
+.chartArea :global(svg.recharts-surface) {
+  display: block;
+}

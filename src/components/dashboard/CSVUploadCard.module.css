@@ -1,0 +1,502 @@
+.card {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 200px;
+  overflow: visible;
+}
+
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-primary-text);
+  margin: 0;
+}
+
+.subtext {
+  font-size: 0.9rem;
+  color: var(--color-secondary-text);
+  margin: 0 0 1rem 0;
+  line-height: 1.4;
+}
+
+.templateRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.uploadHistorySection {
+  margin-top: 1.25rem;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.uploadHistoryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+}
+
+.uploadHistoryTitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-primary-text);
+}
+
+/* Delete upload: global `pq-btn-danger-red` (index.css). Refresh uses Settings backup-action classes. */
+
+/* Compact header size; `button` + local class beats imported `.actionBtn` specificity */
+button.uploadHistoryRefreshBtn {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.55rem;
+  min-width: 5.25rem;
+}
+
+.uploadHistoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.uploadHistoryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.55rem;
+}
+
+.uploadHistoryMeta {
+  min-width: 0;
+}
+
+.uploadHistoryMain {
+  font-size: 0.82rem;
+  color: var(--color-primary-text);
+}
+
+.uploadHistorySub {
+  font-size: 0.76rem;
+  color: var(--color-secondary-text);
+}
+
+.uploadHistoryEmpty {
+  font-size: 0.82rem;
+  color: var(--color-secondary-text);
+}
+
+.templateLink {
+  font-size: 0.85rem;
+  color: var(--color-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color var(--transition-fast), color var(--transition-fast);
+  vertical-align: middle;
+}
+
+.templateLink:hover {
+  color: var(--color-accent-hover);
+  text-decoration-color: var(--color-accent);
+}
+
+.templateLink:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-top: -2px;
+}
+
+.infoTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-left: 2px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-card-bg);
+  color: var(--color-secondary-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: help;
+  vertical-align: middle;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.infoTrigger:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.infoTrigger:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.dropZone {
+  border: 2px dashed var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition-base), background var(--transition-base);
+  background: transparent;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 140px;
+}
+
+.dropZone:hover,
+.dropZone.active {
+  border-color: var(--color-accent);
+  background: rgba(55, 193, 165, 0.06);
+}
+
+.dropZone.error {
+  border-color: var(--color-error);
+  background: rgba(194, 69, 60, 0.06);
+}
+
+.dropError {
+  font-size: 0.85rem;
+  color: var(--color-error);
+  margin: 0;
+}
+
+.uploadIcon {
+  width: 48px;
+  height: 48px;
+  color: var(--color-accent);
+  opacity: 0.9;
+}
+
+.dropText {
+  font-size: 0.95rem;
+  color: var(--color-secondary-text);
+  margin: 0;
+}
+
+.dropZone:hover .dropText,
+.dropZone.active .dropText {
+  color: var(--color-primary-text);
+}
+
+.fileInput {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.fileCard {
+  background: rgba(55, 193, 165, 0.08);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fileName {
+  font-weight: 600;
+  color: var(--color-primary-text);
+  font-size: 0.95rem;
+}
+
+.fileMeta {
+  font-size: 0.85rem;
+  color: var(--color-secondary-text);
+}
+
+.uploadProgressWrap {
+  margin-top: 0.75rem;
+  height: 6px;
+  background: var(--color-border-light);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.uploadProgressBar {
+  height: 100%;
+  background: var(--color-primary, var(--color-accent));
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.uploadStageLabel {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--color-secondary-text);
+}
+
+.uploadingLabel {
+  color: var(--color-secondary-text);
+  font-style: italic;
+}
+
+.previewSection {
+  margin-top: 1rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.previewTitle {
+  /* Card-header styling (used by "Map your columns" and other section headers) */
+  font-size: 0.875rem; /* ~14px */
+  font-weight: 700;
+  color: #fff;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px 8px 0 0;
+  margin: 0;
+}
+
+.previewTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.previewTh {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  color: var(--color-secondary-text);
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-card-bg);
+}
+
+.previewTd {
+  padding: 0.5rem 0.75rem;
+  color: var(--color-primary-text);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.confirmRow {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.mappingActions {
+  margin-top: 16px;
+  padding: 0 16px 16px 16px;
+  gap: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.mappingBtn {
+  padding: 10px 24px !important;
+  min-width: 140px;
+}
+
+.confirmBtn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-card-bg);
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast), transform 0.15s ease;
+}
+
+.confirmBtn:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+}
+
+.confirmBtn:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.clearBtn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-secondary-text);
+  background: transparent;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.clearBtn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.toast {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: toastIn 0.25s ease;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toastSuccess {
+  background: rgba(46, 139, 87, 0.12);
+  color: var(--color-success);
+  border: 1px solid rgba(46, 139, 87, 0.3);
+}
+
+.toastError {
+  background: rgba(194, 69, 60, 0.12);
+  color: var(--color-error);
+  border: 1px solid rgba(194, 69, 60, 0.3);
+}
+
+.errorList {
+  margin: 0.5rem 0 0 1rem;
+  padding-left: 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border-light);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tooltipContent {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 0.5rem;
+  padding: 0.875rem 1.125rem;
+  min-width: 220px;
+  max-width: 320px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--color-primary-text);
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: visibility var(--transition-fast), opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.tooltip:hover .tooltipContent,
+.tooltip:focus-within .tooltipContent {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tooltipContent strong {
+  color: var(--color-accent);
+}
+
+/* Tooltip dark mode: high contrast for legibility */
+[data-theme="dark"] .tooltipContent {
+  background: #2E2E2E;
+  color: #FBFBFA;
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .tooltipContent strong {
+  color: var(--color-accent);
+}
+
+/* Mapping section ("Map your columns") layout tweaks */
+/* Target the mapping rows (label + dropdown) without affecting preview tables */
+.previewTitle ~ div:not(.confirmRow) {
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 0 !important; /* override inline spacing so first row sits tight */
+}
+
+/* Remove divider from the last mapping row (handles cases with/without mappingError <p>) */
+.previewSection > div:nth-last-child(2):not(.confirmRow):not(.previewTitle),
+.previewSection > div:nth-last-child(3):not(.confirmRow):not(.previewTitle) {
+  border-bottom: none;
+}
+
+/* Ensure labels (date *, total_revenue *, etc.) have comfortable width */
+.previewSection label {
+  min-width: 180px !important; /* Override inline min-width from JSX for better alignment */
+}
