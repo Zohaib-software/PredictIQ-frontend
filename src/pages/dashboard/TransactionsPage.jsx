@@ -14,6 +14,7 @@ import {
   getFinancialData,
   getFinancialRecords,
   getFinancialRecordIds,
+  createRecord,
   updateRecord,
   deleteRecord,
   deleteRecordsBulkAll,
@@ -198,6 +199,7 @@ export function TransactionsPage() {
   const [chartLoading, setChartLoading] = useState(false);
   const [error, setError] = useState(null);
   const [editRecord, setEditRecord] = useState(null);
+  const [createRecordOpen, setCreateRecordOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
@@ -525,6 +527,36 @@ export function TransactionsPage() {
     }
   };
 
+  const handleCreateRecord = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const date = String(form.date?.value || '').trim();
+    const total_revenue = Number(form.total_revenue?.value || 0);
+    const total_expenses = Number(form.total_expenses?.value || 0);
+    const ad_spend = Number(form.ad_spend?.value || 0);
+    const notes = String(form.notes?.value || '').slice(0, 200);
+
+    if (!date) {
+      setToast({ type: 'error', message: 'Date is required' });
+      return;
+    }
+    if ([total_revenue, total_expenses, ad_spend].some((n) => Number.isNaN(n) || n < 0)) {
+      setToast({ type: 'error', message: 'Values must be non-negative' });
+      return;
+    }
+
+    try {
+      await createRecord({ date, total_revenue, total_expenses, ad_spend, notes });
+      setToast({ type: 'success', message: 'Record created' });
+      setCreateRecordOpen(false);
+      await fetchAggregated();
+      await fetchTable();
+      refetchFinancialRecords();
+    } catch (err) {
+      setToast({ type: 'error', message: err?.message || 'Create failed' });
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (!deleteTarget?._id) return;
     try {
@@ -604,6 +636,16 @@ export function TransactionsPage() {
       <div className={styles.tableSection}>
         <div className={styles.recordsHeaderRow}>
           <h2 className={styles.recordsTitle}>Records</h2>
+          <div className={styles.recordsHeaderActions}>
+            {!selectionMode && (
+              <button
+                type="button"
+                className={styles.btnCreateRecord}
+                onClick={() => setCreateRecordOpen(true)}
+              >
+                Add record
+              </button>
+            )}
           {!selectionMode ? (
             <button
               type="button"
@@ -665,6 +707,7 @@ export function TransactionsPage() {
               </button>
             </div>
           )}
+          </div>
         </div>
         <div className={styles.transactionsRecordsFilters}>
           <FilterBar
@@ -894,6 +937,91 @@ export function TransactionsPage() {
           </>
         )}
       </div>
+
+      {/* Edit modal */}
+      <AnimatePresence>
+        {createRecordOpen && (
+          <motion.div
+            className={styles.overlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setCreateRecordOpen(false)}
+          >
+            <motion.div
+              className={styles.modal}
+              initial={{ scale: 0.96, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className={styles.modalTitle}>Add record</h3>
+              <form onSubmit={handleCreateRecord}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="create-date">Date</label>
+                  <input id="create-date" name="date" type="date" required />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="create-revenue">Total Revenue</label>
+                  <input
+                    id="create-revenue"
+                    name="total_revenue"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue="0"
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="create-expenses">Total Expenses</label>
+                  <input
+                    id="create-expenses"
+                    name="total_expenses"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue="0"
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="create-adspend">Ad Spend</label>
+                  <input
+                    id="create-adspend"
+                    name="ad_spend"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue="0"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="create-notes">Details / Notes</label>
+                  <textarea
+                    id="create-notes"
+                    name="notes"
+                    maxLength={200}
+                    placeholder="Add any details you want to keep with this record"
+                  />
+                </div>
+                <div className={styles.modalActions}>
+                  <button
+                    type="button"
+                    className={styles.btnCancel}
+                    onClick={() => setCreateRecordOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className={styles.btnSave}>
+                    Create record
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Edit modal */}
       <AnimatePresence>
