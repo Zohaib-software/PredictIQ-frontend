@@ -176,6 +176,18 @@
   color: var(--color-primary-text);
 }
 
+.forecastAccuracyMapeGood .forecastAccuracyValue {
+  color: var(--color-success);
+}
+
+.forecastAccuracyMapeWarn .forecastAccuracyValue {
+  color: #d08b2d;
+}
+
+.forecastAccuracyMapeBad .forecastAccuracyValue {
+  color: var(--color-error);
+}
+
 .forecastMuted {
   font-size: 0.875rem;
   color: var(--color-secondary-text);
@@ -201,19 +213,45 @@
   justify-content: flex-start;
 }
 
+@media (max-width: 768px) {
+  .forecastDownloadWrap {
+    justify-content: center;
+  }
+}
+
+/* AI chart summary: outline CTA, same layout as forecast download row, no extra top margin (stack gap only). */
+.narrateOutlineBtnWrap {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 0;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .narrateOutlineBtnWrap {
+    justify-content: center;
+  }
+}
+
 .forecastDownloadBtnSubtle {
   margin-top: 0;
-  padding: 0.4rem 0.65rem;
-  font-size: 0.78rem;
-  font-weight: 500;
-  border-color: var(--color-border-light);
-  color: var(--color-secondary-text);
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: 1px solid var(--color-border);
+  color: var(--color-primary-text);
+  background: var(--color-card-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme='dark'] .forecastDownloadBtnSubtle {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .forecastDownloadBtnSubtle:hover {
-  background: rgba(55, 193, 165, 0.08);
+  background: rgba(55, 193, 165, 0.14);
   color: var(--color-primary-text);
-  border-color: rgba(55, 193, 165, 0.35);
+  border-color: var(--color-accent);
 }
 
 .forecastDownloadBtn:hover {
@@ -236,7 +274,12 @@
   grid-column: span 2;
 }
 
-/* Uniform card treatment — charts and summary cards use same padding/margins via ChartCard and SummaryCard */
+/* SettingsPage: root shell gets this class; children use plain `settings-r-*` markers for rules in media queries below */
+.settingsPageRoot {
+  position: relative;
+}
+
+/* Uniform card treatment: charts and summary cards use same padding/margins via ChartCard and SummaryCard */
 @media (max-width: 900px) {
   .grid {
     grid-template-columns: 1fr;
@@ -249,9 +292,94 @@
   .span2 {
     grid-column: span 1;
   }
+
+  .settingsPageRoot :global(.settings-r-info-grid) {
+    grid-template-columns: 1fr;
+  }
+  .settingsPageRoot :global(.settings-r-password-grid) {
+    grid-template-columns: 1fr;
+  }
+  .settingsPageRoot :global(.settings-r-two-factor-setup-panel) {
+    grid-template-columns: 1fr;
+  }
+  .settingsPageRoot :global(.settings-r-two-factor-setup-media) {
+    width: 100%;
+    max-width: 220px;
+  }
+  .settingsPageRoot :global(.settings-r-two-factor-setup-body) {
+    border-left: none;
+    padding-left: 0;
+  }
+  .settingsPageRoot :global(.settings-r-two-factor-setup-step1-row) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .settingsPageRoot :global(.settings-r-two-factor-qr) {
+    width: 100%;
+    max-width: 220px;
+  }
+  .settingsPageRoot :global(.settings-r-backup-codes-grid) {
+    grid-template-columns: 1fr;
+  }
+  .settingsPageRoot :global(.settings-r-password-grid) > :last-child {
+    grid-column: auto;
+  }
+  .settingsPageRoot :global(.settings-r-control-row) {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .settingsPageRoot :global(.settings-r-control-cta) {
+    justify-content: flex-start;
+  }
+  .settingsPageRoot :global(.settings-r-setting-row) {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
 }
 
 @media (max-width: 768px) {
+  .forecastingPageMobile.layoutStack {
+    gap: 0.75rem;
+  }
+
+  /* Model accuracy follows chart + projection on small screens; rule separates from full-bleed chart strip */
+  .forecastingPageMobile .forecastAccuracyMobileBelow {
+    margin-top: 0.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .forecastingPageMobile .forecastAccuracyGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .forecastingPageMobile .forecastAccuracyItem {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.2rem 1rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--color-border-light);
+    align-items: baseline;
+  }
+
+  .forecastingPageMobile .forecastAccuracyItem:last-child {
+    border-bottom: none;
+  }
+
+  .forecastingPageMobile .forecastAccuracyValue {
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .forecastingPageMobile .forecastAccuracyItem > .forecastMuted {
+    grid-column: 1 / -1;
+    font-size: 0.78rem;
+    margin-top: 0.1rem;
+  }
+
   .rowTwoColumn {
     grid-template-columns: 1fr;
   }
@@ -265,6 +393,13 @@
   .stackedCard {
     flex: initial;
     overflow: visible;
+  }
+
+  .settingsPageRoot :global(.settings-r-session-card) {
+    grid-template-columns: 1fr;
+  }
+  .settingsPageRoot :global(.settings-r-session-actions) {
+    justify-content: flex-start;
   }
 }
 
@@ -281,12 +416,58 @@
   .forecastAccuracyGrid {
     grid-template-columns: 1fr;
   }
+
+  .settingsPageRoot :global(.settings-r-main) {
+    padding: 1rem;
+  }
 }
 
 .narrateEmbed {
   margin-top: 0;
   padding-top: 1.15rem;
   border-top: 1px solid var(--color-border-light);
+}
+
+@media (max-width: 768px) {
+  /*
+   * Full-width rule under AI summary (matches chart section edge-to-edge with content padding breakout).
+   */
+  .narrateEmbed {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    border-bottom: none;
+    margin-bottom: 0.75rem;
+    padding: 1.15rem 0 1.1rem;
+  }
+
+  .narrateEmbed::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--color-border-light);
+  }
+
+  .overviewForecastShell .forecastDownloadWrap {
+    padding: 0.65rem 1rem 0;
+    margin-top: 0;
+    justify-content: center;
+  }
+
+  .overviewForecastShell .forecastMuted,
+  .overviewForecastShell .forecastError {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .narrateEmbedStack {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    box-sizing: border-box;
+  }
 }
 
 .narrateEmbedStack {

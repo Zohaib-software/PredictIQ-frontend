@@ -65,7 +65,7 @@ export function AnomalyAnnotationModal({
             aria-labelledby="anomaly-annotation-title"
           >
             <h3 id="anomaly-annotation-title" className={confirmStyles.title}>
-              Explain Anomaly — {periodLabel}
+              Explain Anomaly: {periodLabel}
             </h3>
             <p className={styles.scopeHint}>
               Saving copies this text to every financial entry in {periodLabel} (all days in that
@@ -75,7 +75,7 @@ export function AnomalyAnnotationModal({
               className={styles.textarea}
               value={text}
               onChange={(e) => setText(e.target.value.slice(0, MAX_LEN))}
-              placeholder="e.g. Christmas period — higher supplier costs than usual"
+              placeholder="e.g. Christmas period: higher supplier costs than usual"
               rows={5}
               disabled={saving}
               aria-label="Anomaly explanation"

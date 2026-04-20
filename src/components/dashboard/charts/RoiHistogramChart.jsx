@@ -65,7 +65,7 @@ export function RoiHistogramChart({ data }) {
             border: '1px solid var(--color-border-light)',
             borderRadius: 8,
           }}
-          formatter={(value) => [(value != null ? formatInteger(value) : '—'), 'Count']}
+          formatter={(value) => [(value != null ? formatInteger(value) : '-'), 'Count']}
           labelFormatter={(l) => `ROI range: ${l}`}
         />
         <Bar

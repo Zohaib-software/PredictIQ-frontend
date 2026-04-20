@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -13,16 +13,26 @@ import {
 import { useFinancialRecords } from '../../../context/FinancialRecordsContext';
 import { useReducedMotionSetting } from '../../../context/ReducedMotionContext';
 import { chartColors, chartProjectionStroke } from '../../../theme';
+import {
+  StructuredChartLegend,
+  structuredLegendChartBottom,
+  structuredLegendWrapperStyle,
+} from '../StructuredChartLegend';
 import { paddedNumericDomain } from '../../../utils/chartAxisDomain';
 import { formatChartAxisGBP, formatGbp } from '../../../utils/displayFormat';
 import { getFuturePeriodLabels, projectForwardIndices } from '../../../utils/seriesProjection';
 
 const ACTUAL_FILL = chartColors[0];
 
+const NET_PROFIT_LEGEND_SHORT_LABELS = {
+  actual: 'Actual',
+  proj: 'Proj.',
+};
+
 /**
  * @param {{ date: string[], netProfit?: number[] }} data
  * @param {number} projectionMonths
- * @param {'daily'|'weekly'|'monthly'|'yearly'} periodType — bucket style for projection x-axis labels
+ * @param {'daily'|'weekly'|'monthly'|'yearly'} periodType - bucket style for projection x-axis labels
  */
 export function NetProfitChart({ data, projectionMonths = 1, periodType = 'monthly' }) {
   const { reducedMotionEnabled } = useReducedMotionSetting();
@@ -94,6 +104,12 @@ export function NetProfitChart({ data, projectionMonths = 1, periodType = 'month
 
   const showProj = projectionActive && baseRows.length >= 2;
 
+  const legendRows = useMemo(
+    () => (showProj ? [['actual'], ['proj']] : [['actual']]),
+    [showProj]
+  );
+  const legendBottom = useMemo(() => structuredLegendChartBottom(legendRows), [legendRows]);
+
   const legendPayload = [
     { value: 'Actual', type: 'rect', id: 'actual', color: ACTUAL_FILL },
     ...(showProj
@@ -103,7 +119,7 @@ export function NetProfitChart({ data, projectionMonths = 1, periodType = 'month
 
   return (
     <ResponsiveContainer width="100%" height={320}>
-      <BarChart data={chartRows} margin={{ top: 10, right: 12, left: 4, bottom: 12 }}>
+      <BarChart data={chartRows} margin={{ top: 10, right: 12, left: 4, bottom: legendBottom }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
         <XAxis
           dataKey="period"
@@ -143,17 +159,22 @@ export function NetProfitChart({ data, projectionMonths = 1, periodType = 'month
           labelFormatter={(l) => `Period: ${l}`}
         />
         <Legend
-          wrapperStyle={{ cursor: 'pointer', fontSize: 12, paddingTop: 8 }}
+          verticalAlign="bottom"
+          align="center"
+          wrapperStyle={{ ...structuredLegendWrapperStyle, paddingTop: 4 }}
           payload={legendPayload}
-          onClick={onNetLegendClick}
-          formatter={(value, entry) => {
-            const id = entry?.id ?? entry?.payload?.id;
-            const dim =
-              ((id === 'actual' || value === 'Actual') && hiddenLegendIds.has('actual')) ||
-              ((id === 'proj' || value === 'Projected (linear trend)') &&
-                hiddenLegendIds.has('proj'));
-            return <span style={{ opacity: dim ? 0.45 : 1 }}>{value}</span>;
-          }}
+          content={() => (
+            <StructuredChartLegend
+              payload={legendPayload}
+              hidden={hiddenLegendIds}
+              dimPairs={[]}
+              isDimmed={(h, k) => h.has(k)}
+              onItemClick={onNetLegendClick}
+              rows={legendRows}
+              shortLabels={NET_PROFIT_LEGEND_SHORT_LABELS}
+              dashedKeys={new Set(['proj'])}
+            />
+          )}
         />
         <Bar
           dataKey="barValue"

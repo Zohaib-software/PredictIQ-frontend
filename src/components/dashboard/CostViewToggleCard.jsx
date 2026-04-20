@@ -4,9 +4,14 @@ import { FilterBar } from './FilterBar';
 import { ExpenseVolatilityGauge } from './charts/ExpenseVolatilityGauge';
 import { CostBreakdownChart } from './charts/CostBreakdownChart';
 import { costBreakdownIsOnlyUncategorizedOperating } from '../../utils/costBreakdownLabels';
+import chartLayoutStyles from '../../pages/dashboard/DataPage.module.css';
+import reportsChartStyles from '../../pages/dashboard/ReportsPage.module.css';
+import chartCardStyles from './ChartCard.module.css';
 
 export function CostViewToggleCard({
   className = '',
+  /** Strip card chrome; stack volatility + breakdown with one filter row (Reports mobile). */
+  narrowLayout = false,
   volatilityData,
   volatilityLoading,
   volatilityError,
@@ -119,7 +124,7 @@ export function CostViewToggleCard({
         onEndDateChange={onVolatilityEndDateChange}
         onReset={onResetVolatilityDateRange}
         idPrefix="reports-cost-volatility-date-range"
-        variant="embedded"
+        variant="plain"
       />
     ),
     [
@@ -140,7 +145,7 @@ export function CostViewToggleCard({
         onEndDateChange={onBreakdownEndDateChange}
         onReset={onResetBreakdownDateRange}
         idPrefix="reports-cost-breakdown-date-range"
-        variant="embedded"
+        variant="plain"
       />
     ),
     [
@@ -152,58 +157,132 @@ export function CostViewToggleCard({
     ]
   );
 
-  const filtersBar = showVolatility ? volatilityFiltersBar : breakdownFiltersBar;
+  const filtersBar = narrowLayout
+    ? null
+    : showVolatility
+      ? volatilityFiltersBar
+      : breakdownFiltersBar;
 
   const showUncategorizedHint =
     !showVolatility &&
     hasData &&
     costBreakdownIsOnlyUncategorizedOperating(costBreakdownData);
 
+  const showUncategorizedHintMobile =
+    narrowLayout &&
+    hasCostBreakdownData &&
+    costBreakdownIsOnlyUncategorizedOperating(costBreakdownData);
+
+  const combinedLoading = narrowLayout ? volatilityLoading || costBreakdownLoading : loading;
+  const combinedError =
+    narrowLayout ?
+      volatilityError && costBreakdownError
+        ? volatilityError
+        : null
+    : error;
+  const combinedHasData = narrowLayout ? hasVolatilityData || hasCostBreakdownData : hasData;
+
   return (
-    <div style={{ height: '100%', minHeight: 0, display: 'flex' }}>
+    <div style={{ height: narrowLayout ? 'auto' : '100%', minHeight: 0, display: 'flex', width: '100%' }}>
       <ChartCard
         className={className}
-        title={title}
-        subtitle={subtitle}
-        actions={viewToggle}
+        flatLayout={narrowLayout}
+        filtersBarGapPx={narrowLayout ? 6 : 10}
+        title={narrowLayout ? '' : title}
+        subtitle={narrowLayout ? '' : subtitle}
+        actions={narrowLayout ? null : viewToggle}
         filtersBar={filtersBar}
-        loading={loading}
-        error={error}
-        hasData={hasData}
+        loading={narrowLayout ? false : combinedLoading}
+        error={narrowLayout ? null : combinedError}
+        hasData={narrowLayout ? true : combinedHasData}
       >
-        <div
-          style={{
-            flex: 1,
-            minHeight: 0,
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}
-        >
-          {showVolatility ? (
-            <ExpenseVolatilityGauge data={volatilityData} />
-          ) : (
-            <>
-              <CostBreakdownChart data={costBreakdownData} />
-              {showUncategorizedHint && (
-                <p
-                  style={{
-                    margin: '0.5rem 0 0',
-                    fontSize: '0.8rem',
-                    lineHeight: 1.45,
-                    color: 'var(--color-secondary-text)',
-                  }}
-                >
-                  Your data does not yet split day-to-day costs into categories, so that spend
-                  appears as Other. To see slices such as rent or software here, import a CSV that
-                  includes separate columns for those costs and map each column to a category when
-                  you set up the import.
-                </p>
-              )}
-            </>
-          )}
-        </div>
+        {narrowLayout ? (
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '100%',
+              minWidth: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'stretch',
+              minHeight: 0,
+              overflowX: 'clip',
+              boxSizing: 'border-box',
+            }}
+          >
+            <div className={chartCardStyles.flatChartCaption}>
+              <h3 className={chartCardStyles.flatChartCaptionTitle}>Expense Volatility</h3>
+              <p className={chartCardStyles.flatChartCaptionText}>
+                0–100 score of monthly expense variability vs average; higher means bigger swings.
+              </p>
+            </div>
+            <div className={reportsChartStyles.reportsMobileFiltersBarWrap}>{volatilityFiltersBar}</div>
+            <div className={reportsChartStyles.reportsGaugePlotMobile}>
+              <ExpenseVolatilityGauge data={volatilityData} />
+            </div>
+            <hr className={reportsChartStyles.reportsMobileInBlockDivider} aria-hidden="true" />
+            <div className={chartCardStyles.flatChartCaption}>
+              <h3 className={chartCardStyles.flatChartCaptionTitle}>Cost Breakdown by Category</h3>
+              <p className={chartCardStyles.flatChartCaptionText}>
+                Spend by category from each record’s saved expense breakdown, plus total ad spend.
+                Anything not assigned to a category is grouped as Other.
+              </p>
+            </div>
+            <div className={reportsChartStyles.reportsMobileFiltersBarWrap}>{breakdownFiltersBar}</div>
+            <div className={chartLayoutStyles.chartPlotCompact}>
+              <CostBreakdownChart data={costBreakdownData} intrinsicHeight />
+            </div>
+            {showUncategorizedHintMobile && (
+              <p
+                style={{
+                  margin: '0.5rem 1rem 0',
+                  fontSize: '0.8rem',
+                  lineHeight: 1.45,
+                  color: 'var(--color-secondary-text)',
+                }}
+              >
+                Your data does not yet split day-to-day costs into categories, so that spend
+                appears as Other. To see slices such as rent or software here, import a CSV that
+                includes separate columns for those costs and map each column to a category when
+                you set up the import.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+            }}
+          >
+            {showVolatility ? (
+              <ExpenseVolatilityGauge data={volatilityData} />
+            ) : (
+              <>
+                <CostBreakdownChart data={costBreakdownData} />
+                {showUncategorizedHint && (
+                  <p
+                    style={{
+                      margin: '0.5rem 0 0',
+                      fontSize: '0.8rem',
+                      lineHeight: 1.45,
+                      color: 'var(--color-secondary-text)',
+                    }}
+                  >
+                    Your data does not yet split day-to-day costs into categories, so that spend
+                    appears as Other. To see slices such as rent or software here, import a CSV that
+                    includes separate columns for those costs and map each column to a category when
+                    you set up the import.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </ChartCard>
     </div>
   );

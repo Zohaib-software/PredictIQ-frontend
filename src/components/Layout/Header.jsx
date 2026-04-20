@@ -18,7 +18,7 @@ export function Header() {
             <>
               <Link
                 to="/data"
-                className={location.pathname === '/data' ? styles.active : ''}
+                className={`${styles.dashboardLink} ${location.pathname === '/data' ? styles.active : ''}`}
                 aria-current={location.pathname === '/data' ? 'page' : undefined}
               >
                 Dashboard
@@ -34,7 +34,9 @@ export function Header() {
             <>
               <Link
                 to="/login"
-                className={location.pathname === '/login' ? styles.active : ''}
+                className={`${styles.publicLoginLink} ${
+                  location.pathname === '/login' ? styles.active : ''
+                }`}
                 aria-current={location.pathname === '/login' ? 'page' : undefined}
               >
                 Log in

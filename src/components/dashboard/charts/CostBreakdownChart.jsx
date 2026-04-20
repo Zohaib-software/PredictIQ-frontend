@@ -1,13 +1,14 @@
-import { useState, useCallback, useRef, useLayoutEffect } from 'react';
+import { useState, useCallback, useRef, useLayoutEffect, useMemo } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { costCategoryPalette } from '../../../theme';
 import { useReducedMotionSetting } from '../../../context/ReducedMotionContext';
 import { formatGbp } from '../../../utils/displayFormat';
 
 /** Reserve horizontal space for legend + gap so the square pie never overlaps labels. */
-const LEGEND_RESERVE_PX = 118;
+const LEGEND_RESERVE_WIDE_PX = 118;
+const LEGEND_RESERVE_NARROW_PX = 96;
 
-export function CostBreakdownChart({ data }) {
+export function CostBreakdownChart({ data, intrinsicHeight = false }) {
   const { reducedMotionEnabled } = useReducedMotionSetting();
   const [hiddenNames, setHiddenNames] = useState(() => new Set());
   const containerRef = useRef(null);
@@ -21,7 +22,8 @@ export function CostBreakdownChart({ data }) {
       const w = r.width;
       const h = r.height;
       if (w < 8 || h < 8) return;
-      const side = Math.min(h, Math.max(0, w - LEGEND_RESERVE_PX));
+      const reserve = w < 400 ? LEGEND_RESERVE_NARROW_PX : LEGEND_RESERVE_WIDE_PX;
+      const side = Math.min(h, Math.max(0, w - reserve));
       const clamped = Math.min(360, Math.max(180, Math.floor(side)));
       setChartBoxPx(clamped);
     };
@@ -29,17 +31,17 @@ export function CostBreakdownChart({ data }) {
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
+  }, [data, intrinsicHeight]);
+
+  const series = useMemo(() => {
+    if (!data?.labels?.length) return [];
+    return data.labels
+      .map((label, i) => ({
+        name: label || 'Other',
+        value: data.values?.[i] ?? 0,
+      }))
+      .filter((d) => d.value > 0);
   }, [data]);
-
-  if (!data?.labels?.length) return null;
-  const series = data.labels
-    .map((label, i) => ({
-      name: label || 'Other',
-      value: data.values?.[i] ?? 0,
-    }))
-    .filter((d) => d.value > 0);
-
-  if (series.length === 0) return null;
 
   const toggleSeriesVisibility = useCallback(
     (name) => {
@@ -61,20 +63,23 @@ export function CostBreakdownChart({ data }) {
     [series]
   );
 
-  /** Only non-hidden slices — the pie redraws full 360° so it doesn’t look “bitten”. */
+  if (series.length === 0) return null;
+
+  /** Only non-hidden slices; the pie redraws full 360° so it doesn’t look “bitten”. */
   const visibleSeries = series.filter((d) => !hiddenNames.has(d.name));
 
   return (
     <div
       ref={containerRef}
       style={{
-        flex: 1,
+        flex: intrinsicHeight ? '0 1 auto' : 1,
         minHeight: 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: '0.3rem',
+        gap: '0.2rem',
         width: '100%',
+        boxSizing: 'border-box',
       }}
     >
       <div
@@ -135,11 +140,11 @@ export function CostBreakdownChart({ data }) {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          gap: '0.45rem',
+          gap: '0.32rem',
           flexShrink: 0,
-          paddingRight: 2,
-          fontSize: '0.92rem',
-          lineHeight: 1.55,
+          paddingRight: 0,
+          fontSize: '0.88rem',
+          lineHeight: 1.45,
         }}
       >
         {series.map((entry, i) => {
@@ -162,6 +167,7 @@ export function CostBreakdownChart({ data }) {
                 color: 'var(--color-primary-text)',
                 textAlign: 'left',
                 font: 'inherit',
+                WebkitTapHighlightColor: 'transparent',
               }}
             >
               <span

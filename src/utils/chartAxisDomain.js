@@ -44,7 +44,7 @@ export function paddedNumericDomain(seriesArrays, opts = {}) {
   return [min - pad, max + pad];
 }
 
-/** Count axis (histograms): always [0, padded max], integers — avoids Recharts float ticks (e.g. 81.00000001) */
+/** Count axis (histograms): always [0, padded max], integers; avoids Recharts float ticks (e.g. 81.00000001) */
 export function countAxisDomain(counts, padRatio = 0.12) {
   const nums = (counts ?? []).map(Number).filter((n) => Number.isFinite(n));
   const mx = nums.length ? Math.max(...nums) : 0;

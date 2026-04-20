@@ -619,12 +619,12 @@ export function CSVUploadCard() {
                   <tbody>
                     {normalizedRows.slice(0, PREVIEW_ROW_COUNT).map((row, i) => (
                       <tr key={i}>
-                        <td className={styles.previewTd}>{row.date ?? '—'}</td>
-                        <td className={styles.previewTd}>{row.total_revenue != null ? formatGbp(row.total_revenue) : '—'}</td>
-                        <td className={styles.previewTd}>{row.total_expenses != null ? formatGbp(row.total_expenses) : '—'}</td>
-                        <td className={styles.previewTd}>{row.gross_profit != null ? formatGbp(row.gross_profit) : '—'}</td>
-                        <td className={styles.previewTd}>{row.ad_spend != null ? formatGbp(row.ad_spend) : '—'}</td>
-                        <td className={styles.previewTd}>{row.notes ?? '—'}</td>
+                        <td className={styles.previewTd}>{row.date ?? '-'}</td>
+                        <td className={styles.previewTd}>{row.total_revenue != null ? formatGbp(row.total_revenue) : '-'}</td>
+                        <td className={styles.previewTd}>{row.total_expenses != null ? formatGbp(row.total_expenses) : '-'}</td>
+                        <td className={styles.previewTd}>{row.gross_profit != null ? formatGbp(row.gross_profit) : '-'}</td>
+                        <td className={styles.previewTd}>{row.ad_spend != null ? formatGbp(row.ad_spend) : '-'}</td>
+                        <td className={styles.previewTd}>{row.notes ?? '-'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -770,7 +770,7 @@ export function CSVUploadCard() {
                       {uploadedAt} · {doc.recordsCount ?? 0} records
                     </div>
                     <div className={styles.uploadHistorySub}>
-                      Range: {doc.firstRecordDate ?? '—'} to {doc.lastRecordDate ?? '—'}
+                      Range: {doc.firstRecordDate ?? '-'} to {doc.lastRecordDate ?? '-'}
                     </div>
                   </div>
                   <button

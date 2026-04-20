@@ -10,7 +10,7 @@ const STAGE_COLORS = [
 function pctOfRevenue(part, revenueTop) {
   const p = Number(part);
   const r = Number(revenueTop);
-  if (!Number.isFinite(p) || !Number.isFinite(r) || r <= 0) return '—';
+  if (!Number.isFinite(p) || !Number.isFinite(r) || r <= 0) return '-';
   return `${Math.round((p / r) * 1000) / 10}%`;
 }
 

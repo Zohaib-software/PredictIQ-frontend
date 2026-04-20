@@ -100,6 +100,89 @@ function kpiMarginClass(margin) {
   return styles.kpiMarginRed;
 }
 
+/** Stacked card layout for small screens; same data/actions as the desktop table. */
+function TransactionRecordCard({
+  record: r,
+  selectionMode,
+  selected,
+  onToggleSelect,
+  onEdit,
+  onDelete,
+}) {
+  const notesRaw = String(r.notes ?? '').trim();
+  const periodLabel = r.period || r.date;
+
+  return (
+    <article className={styles.recordCard}>
+      <div className={styles.recordCardTop}>
+        {selectionMode ? (
+          <label className={styles.recordCardCheckboxLabel}>
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={onToggleSelect}
+              aria-label={`Select record ${periodLabel}`}
+            />
+            <span className={styles.recordCardPeriod} title={periodLabel}>
+              {periodLabel}
+            </span>
+          </label>
+        ) : (
+          <h3 className={styles.recordCardPeriodHeading} title={periodLabel}>
+            {periodLabel}
+          </h3>
+        )}
+      </div>
+      <dl className={styles.recordCardGrid}>
+        <div className={styles.recordCardStat}>
+          <dt>Revenue</dt>
+          <dd>{formatGbp(r.total_revenue)}</dd>
+        </div>
+        <div className={styles.recordCardStat}>
+          <dt>Expenses</dt>
+          <dd>{formatGbp(r.total_expenses)}</dd>
+        </div>
+        <div className={styles.recordCardStat}>
+          <dt>Gross profit</dt>
+          <dd>{formatGbp(r.gross_profit)}</dd>
+        </div>
+        <div className={styles.recordCardStat}>
+          <dt>Ad spend</dt>
+          <dd>{formatGbp(r.ad_spend)}</dd>
+        </div>
+        <div className={`${styles.recordCardStat} ${styles.recordCardStatWide}`}>
+          <dt>Profit margin</dt>
+          <dd className={marginClass(r.profit_margin)}>
+            {formatPercentPoints(r.profit_margin ?? 0, 1)}
+          </dd>
+        </div>
+      </dl>
+      <div className={styles.recordCardNotesBlock}>
+        <span className={styles.recordCardNotesLabel}>Notes</span>
+        <p className={styles.recordCardNotesText}>{notesRaw || '-'}</p>
+      </div>
+      <div className={styles.recordCardActions}>
+        <button
+          type="button"
+          className="pq-btn-danger-zone pq-btn--table-action"
+          onClick={onEdit}
+          aria-label={`Edit record ${periodLabel}`}
+        >
+          Edit
+        </button>
+        <button
+          type="button"
+          className="pq-btn-danger-red pq-btn--table-action"
+          onClick={onDelete}
+          aria-label={`Delete record ${periodLabel}`}
+        >
+          Delete
+        </button>
+      </div>
+    </article>
+  );
+}
+
 export function TransactionsPage() {
   const [period, setPeriod] = useState('monthly');
   const [startDate, setStartDate] = useState('');
@@ -122,6 +205,7 @@ export function TransactionsPage() {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [selectingAllIds, setSelectingAllIds] = useState(false);
   const selectAllRef = useRef(null);
+  const mobileSelectAllRef = useRef(null);
   const [toast, setToast] = useState(null);
   const [editRevenue, setEditRevenue] = useState(0);
   const [editExpenses, setEditExpenses] = useState(0);
@@ -213,10 +297,12 @@ export function TransactionsPage() {
   const someOnPageSelected = pageIds.some((id) => selectedIds.has(id));
 
   useEffect(() => {
-    const el = selectAllRef.current;
-    if (el && selectionMode) {
-      el.indeterminate = someOnPageSelected && !allOnPageSelected;
-    }
+    const ind = someOnPageSelected && !allOnPageSelected;
+    [selectAllRef.current, mobileSelectAllRef.current].forEach((el) => {
+      if (el && selectionMode) {
+        el.indeterminate = ind;
+      }
+    });
   }, [someOnPageSelected, allOnPageSelected, selectionMode]);
 
   /** Clear cross-page selection when date range or notes filter changes (not when paginating). */
@@ -514,7 +600,7 @@ export function TransactionsPage() {
         <CSVUploadCard />
       </div>
 
-      {/* SECTION 4 — Data table */}
+      {/* SECTION 4: Data table */}
       <div className={styles.tableSection}>
         <div className={styles.recordsHeaderRow}>
           <h2 className={styles.recordsTitle}>Records</h2>
@@ -540,7 +626,7 @@ export function TransactionsPage() {
                     )}
                   </>
                 ) : (
-                  'Tick rows on any page — selection is kept when you change pages'
+                  'Tick rows on any page; selection is kept when you change pages'
                 )}
               </span>
               {tableTotal > 0 && (
@@ -580,57 +666,59 @@ export function TransactionsPage() {
             </div>
           )}
         </div>
-        <FilterBar
-          startDate={startDate}
-          onStartDateChange={setStartDate}
-          endDate={endDate}
-          onEndDateChange={setEndDate}
-          onReset={handleResetFilters}
-          idPrefix="transactions-records-filter"
-          variant="embedded"
-          extraContent={(
-            <div className={styles.recordsFilterExtras}>
-              <div className={styles.filterSelectGroup}>
-                <label className={styles.dateRangeLabel} htmlFor="transactions-records-sort">
-                  Sort by
-                </label>
-                <select
-                  id="transactions-records-sort"
-                  className={styles.filterSelect}
-                  value={tableSort}
-                  onChange={(e) => setTableSort(e.target.value)}
-                >
-                  <option value="date_desc">Date: newest first</option>
-                  <option value="date_asc">Date: oldest first</option>
-                  <option value="revenue_desc">Revenue: high to low</option>
-                  <option value="revenue_asc">Revenue: low to high</option>
-                  <option value="expenses_desc">Expenses: high to low</option>
-                  <option value="expenses_asc">Expenses: low to high</option>
-                  <option value="gross_profit_desc">Gross profit: high to low</option>
-                  <option value="gross_profit_asc">Gross profit: low to high</option>
-                  <option value="ad_spend_desc">Ad spend: high to low</option>
-                  <option value="ad_spend_asc">Ad spend: low to high</option>
-                </select>
+        <div className={styles.transactionsRecordsFilters}>
+          <FilterBar
+            startDate={startDate}
+            onStartDateChange={setStartDate}
+            endDate={endDate}
+            onEndDateChange={setEndDate}
+            onReset={handleResetFilters}
+            idPrefix="transactions-records-filter"
+            variant="embedded"
+            extraContent={(
+              <div className={styles.recordsFilterExtras}>
+                <div className={styles.filterSelectGroup}>
+                  <label className={styles.dateRangeLabel} htmlFor="transactions-records-sort">
+                    Sort by
+                  </label>
+                  <select
+                    id="transactions-records-sort"
+                    className={styles.filterSelect}
+                    value={tableSort}
+                    onChange={(e) => setTableSort(e.target.value)}
+                  >
+                    <option value="date_desc">Date: newest first</option>
+                    <option value="date_asc">Date: oldest first</option>
+                    <option value="revenue_desc">Revenue: high to low</option>
+                    <option value="revenue_asc">Revenue: low to high</option>
+                    <option value="expenses_desc">Expenses: high to low</option>
+                    <option value="expenses_asc">Expenses: low to high</option>
+                    <option value="gross_profit_desc">Gross profit: high to low</option>
+                    <option value="gross_profit_asc">Gross profit: low to high</option>
+                    <option value="ad_spend_desc">Ad spend: high to low</option>
+                    <option value="ad_spend_asc">Ad spend: low to high</option>
+                  </select>
+                </div>
+                <div className={styles.filterSelectGroup}>
+                  <label className={styles.dateRangeLabel} htmlFor="transactions-records-notes-search">
+                    Search notes
+                  </label>
+                  <input
+                    id="transactions-records-notes-search"
+                    type="search"
+                    className={styles.recordsNotesSearchInput}
+                    placeholder="e.g. payroll Q1"
+                    value={notesSearchInput}
+                    onChange={(e) => setNotesSearchInput(e.target.value)}
+                    autoComplete="off"
+                    spellCheck="false"
+                    aria-describedby="transactions-records-notes-search-hint"
+                  />
+                </div>
               </div>
-              <div className={styles.filterSelectGroup}>
-                <label className={styles.dateRangeLabel} htmlFor="transactions-records-notes-search">
-                  Search notes
-                </label>
-                <input
-                  id="transactions-records-notes-search"
-                  type="search"
-                  className={styles.recordsNotesSearchInput}
-                  placeholder="e.g. payroll Q1"
-                  value={notesSearchInput}
-                  onChange={(e) => setNotesSearchInput(e.target.value)}
-                  autoComplete="off"
-                  spellCheck="false"
-                  aria-describedby="transactions-records-notes-search-hint"
-                />
-              </div>
-            </div>
-          )}
-        />
+            )}
+          />
+        </div>
         <p id="transactions-records-notes-search-hint" className={styles.recordsSubtext}>
           The date range above filters these records too, including pagination and bulk selection.
           {notesSearchQuery ? (
@@ -694,7 +782,7 @@ export function TransactionsPage() {
                           className={styles.tableNotesClamp}
                           title={notesRaw ? notesRaw : undefined}
                         >
-                          {notesRaw || '—'}
+                          {notesRaw || '-'}
                         </span>
                       </td>
                       <td className={styles.tableActionsCell}>
@@ -726,6 +814,40 @@ export function TransactionsPage() {
                   })}
                 </tbody>
               </table>
+            </div>
+            <div
+              className={styles.recordsCardList}
+              aria-label="Transaction records"
+            >
+              {selectionMode && pageIds.length > 0 && (
+                <div className={styles.recordsCardListSelectAll}>
+                  <label className={styles.recordsCardListSelectAllLabel}>
+                    <input
+                      ref={mobileSelectAllRef}
+                      type="checkbox"
+                      checked={allOnPageSelected}
+                      onChange={toggleSelectAllOnPage}
+                      aria-label="Select all rows on this page"
+                    />
+                    <span>Select all on this page</span>
+                  </label>
+                </div>
+              )}
+              {tableRecords.map((r) => (
+                <TransactionRecordCard
+                  key={r._id}
+                  record={r}
+                  selectionMode={selectionMode}
+                  selected={selectedIds.has(String(r._id))}
+                  onToggleSelect={() => toggleRowSelected(r._id)}
+                  onEdit={() => {
+                    setEditRecord(r);
+                    setEditRevenue(Number(r.total_revenue) || 0);
+                    setEditExpenses(Number(r.total_expenses) || 0);
+                  }}
+                  onDelete={() => setDeleteTarget(r)}
+                />
+              ))}
             </div>
             <div className={styles.pagination}>
               <div className={styles.paginationMeta}>

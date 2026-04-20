@@ -14,7 +14,14 @@
   position: relative;
 }
 
-/* Recharts wraps the surface in .recharts-responsive-container — fill slot with no extra inset */
+/* Narrow layout: avoid clipping the rotated y-axis label; slightly shorter slot reduces empty band under legend */
+.chartAreaNarrow {
+  overflow: visible;
+  height: 380px;
+  min-height: 360px;
+}
+
+/* Recharts wraps the surface in .recharts-responsive-container; fill slot with no extra inset */
 .chartArea :global(.recharts-responsive-container) {
   width: 100% !important;
   height: 100% !important;

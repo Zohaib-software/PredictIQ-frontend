@@ -1,6 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { getFinancialData } from '../api/dataApi';
 import { useFinancialRecords } from '../context/FinancialRecordsContext';
+import {
+  computeSmallScreenDefaultIsoDatesFromMonthlyRecords,
+  matchesSmallScreenForDefaultChartDates,
+} from '../utils/smallScreenDefaultChartDateRange';
 
 const AGGREGATION_PERIOD = 'monthly';
 
@@ -17,6 +21,8 @@ export function useOverviewFinancialAggregates() {
   const [chartLoading, setChartLoading] = useState(false);
   const [error, setError] = useState(null);
   const { setFinancialRecordsPresence, refetchFinancialRecords } = useFinancialRecords();
+  /** After first successful load behaviour (full-range desktop vs 1y mobile), or after reset — do not auto-set dates again. */
+  const overviewDateInitRef = useRef({ consumed: false, userResetFilters: false });
 
   const fetchAggregated = useCallback(async () => {
     setChartLoading(true);
@@ -46,7 +52,36 @@ export function useOverviewFinancialAggregates() {
     fetchAggregated();
   }, [fetchAggregated]);
 
+  useEffect(() => {
+    if (overviewDateInitRef.current.consumed) return;
+    if (chartLoading) return;
+    const records = chartData?.records;
+    if (!Array.isArray(records) || records.length === 0) return;
+
+    if (overviewDateInitRef.current.userResetFilters) {
+      overviewDateInitRef.current.consumed = true;
+      return;
+    }
+
+    if (!matchesSmallScreenForDefaultChartDates()) {
+      overviewDateInitRef.current.consumed = true;
+      return;
+    }
+
+    const range = computeSmallScreenDefaultIsoDatesFromMonthlyRecords(records);
+    if (!range) {
+      overviewDateInitRef.current.consumed = true;
+      return;
+    }
+
+    overviewDateInitRef.current.consumed = true;
+    setStartDate(range.startDate);
+    setEndDate(range.endDate);
+  }, [chartLoading, chartData]);
+
   const resetFilters = useCallback(() => {
+    overviewDateInitRef.current.userResetFilters = true;
+    overviewDateInitRef.current.consumed = true;
     setStartDate('');
     setEndDate('');
   }, []);

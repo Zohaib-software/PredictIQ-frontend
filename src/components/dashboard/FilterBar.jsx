@@ -13,8 +13,11 @@ export function FilterBar({
   onEndDateChange,
   onReset,
   idPrefix,
+  /** default: boxed bar; embedded: under ChartCard title; plain: no inner card (inside chart section) */
   variant = 'default',
   extraContent = null,
+  /** Shorter label on tight mobile rows (e.g. Reports). */
+  resetLabel = 'Reset filters',
 }) {
   const [resetSuccess, setResetSuccess] = useState(false);
   const resetTimerRef = useRef(null);
@@ -45,7 +48,9 @@ export function FilterBar({
   const barClassName =
     variant === 'embedded'
       ? `${styles.filtersBar} ${styles.filtersBarEmbedded}`
-      : styles.filtersBar;
+      : variant === 'plain'
+        ? styles.filtersBarPlain
+        : styles.filtersBar;
 
   return (
     <div className={barClassName}>
@@ -87,7 +92,7 @@ export function FilterBar({
               resetSuccess ? styles.resetFiltersLabelHidden : ''
             }`}
           >
-            Reset filters
+            {resetLabel}
           </span>
           <span
             className={`${styles.resetFiltersTick} ${

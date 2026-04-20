@@ -5,9 +5,13 @@ const STEP_OPTIONS = [1, 2, 3];
 /**
  * Trend projection controls for the Data page chart only (does not use ChartProjectionContext).
  */
-export function DataChartProjectionFooter({ period, steps, onStepsChange }) {
+export function DataChartProjectionFooter({ period, steps, onStepsChange, className = '' }) {
   return (
-    <div className={chartStyles.projectionFooter} role="group" aria-label="Trend projection for this chart">
+    <div
+      className={`${chartStyles.projectionFooter} ${className}`.trim()}
+      role="group"
+      aria-label="Trend projection for this chart"
+    >
       <span className={chartStyles.projectionLabel}>Trend projection</span>
       <div className={chartStyles.projectionHorizon}>
         <span className={chartStyles.projectionMuted}>Horizon</span>

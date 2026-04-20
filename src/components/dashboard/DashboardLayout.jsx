@@ -14,6 +14,7 @@ import {
   showTwoFactorReminderCta,
 } from '../../utils/securityReminderNotification';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MOBILE_NAV_MEDIA, getInitialSidebarOpen } from '../../utils/sidebarViewport';
 import styles from './DashboardLayout.module.css';
 
 const WELCOME_STORAGE_PREFIX = 'predictiq_welcome_seen_';
@@ -26,7 +27,7 @@ const navItems = [
 ];
 
 export function DashboardLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(getInitialSidebarOpen);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const notificationsRef = useRef(null);
@@ -63,6 +64,14 @@ export function DashboardLayout() {
       document.removeEventListener('keydown', handleEscape);
     };
   }, [notificationsOpen]);
+
+  /** Mobile / tablet drawer: close when route changes so the menu does not stay open over the new page */
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!window.matchMedia(MOBILE_NAV_MEDIA).matches) return;
+    setSidebarOpen(false);
+    setNotificationsOpen(false);
+  }, [location.pathname, location.search]);
 
   const userId = user?.id ?? user?._id;
   const welcomeKey = userId ? `${WELCOME_STORAGE_PREFIX}${userId}` : null;
@@ -187,14 +196,17 @@ export function DashboardLayout() {
               <AnimatePresence>
                 {notificationsOpen && (
                   <motion.div
-                    className={styles.notificationsDropdown}
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
-                    role="dialog"
-                    aria-label="Notifications panel"
+                    className={styles.notificationsDropdownShell}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
                   >
+                    <div
+                      className={styles.notificationsDropdown}
+                      role="dialog"
+                      aria-label="Notifications panel"
+                    >
                     <div className={styles.notificationsDropdownHeader}>
                       Notifications
                     </div>
@@ -272,6 +284,7 @@ export function DashboardLayout() {
                       >
                         View all
                       </Link>
+                    </div>
                     </div>
                   </motion.div>
                 )}

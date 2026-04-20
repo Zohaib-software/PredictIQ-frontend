@@ -16,11 +16,17 @@ import { useReducedMotionSetting } from '../../context/ReducedMotionContext';
 import { DataChartProjectionFooter } from './DataChartProjectionFooter';
 import { ChartNarration } from './ChartNarration';
 import { FilterBar } from './FilterBar';
+import {
+  StructuredChartLegend,
+  structuredLegendChartBottom,
+  structuredLegendWrapperStyle,
+} from './StructuredChartLegend';
 import styles from '../../pages/dashboard/DataPage.module.css';
 import { paddedNumericDomain } from '../../utils/chartAxisDomain';
 import { filterForecastChartRowsByDateRange } from '../../utils/forecastChartDisplay';
 import {
   formatChartAxisGBP,
+  formatChartAxisGBPNarrow,
   formatGbp,
   formatGbpCompact,
   formatGbpFull,
@@ -31,7 +37,6 @@ import { chartProjectionStroke } from '../../theme';
 import { useLegendToggleGroups } from '../../hooks/useLegendToggleGroups';
 import {
   filterTooltipPayloadPreferActualOverProjection,
-  legendEntryDimmed,
   projectedLineHidden,
 } from '../../utils/chartLegendVisibility';
 
@@ -51,6 +56,12 @@ const DATA_CHART_ACTUAL_PROJ_PAIRS = [
   { actual: 'expenses', projected: 'expProj' },
   { actual: 'grossProfit', projected: 'gpProj' },
 ];
+
+const DATA_CHART_LEGEND_SHORT_LABELS = {
+  revProj: 'Rev. (proj.)',
+  expProj: 'Exp. (proj.)',
+  gpProj: 'GP (proj.)',
+};
 
 function projectionBucketsForPeriod(period, steps) {
   if (period === 'daily') return steps * 30; // 30/60/90-day horizon
@@ -101,6 +112,16 @@ export function FinancialPerformanceSection({
   const { hasFinancialRecords, loadingRecords } = useFinancialRecords();
   const { reducedMotionEnabled } = useReducedMotionSetting();
   const chartLineAnim = !reducedMotionEnabled;
+
+  const [narrowChartLayout, setNarrowChartLayout] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const mq = window.matchMedia('(max-width: 768px)');
+    const apply = () => setNarrowChartLayout(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
 
   const fetchFullMonthlySeries = useCallback(() => {
     setFullSeriesState((prev) => ({ ...prev, loading: true, error: null }));
@@ -244,6 +265,22 @@ export function FinancialPerformanceSection({
 
   const showProjectedSeries = showChartProjection && displayHasProjection;
 
+  const dataChartLegendRows = useMemo(
+    () =>
+      showProjectedSeries ?
+        [
+          ['revenue', 'expenses', 'grossProfit'],
+          ['revProj', 'expProj', 'gpProj'],
+        ]
+      : [['revenue', 'expenses', 'grossProfit']],
+    [showProjectedSeries]
+  );
+
+  const lineChartBottomMargin = useMemo(
+    () => structuredLegendChartBottom(dataChartLegendRows),
+    [dataChartLegendRows]
+  );
+
   return (
     <>
       {(error || fullSeriesState.error) && (
@@ -263,11 +300,14 @@ export function FinancialPerformanceSection({
       )}
 
       {loading && !summary ? (
-        <div className={styles.kpiGrid}>
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className={styles.skeletonCard} />
-          ))}
-        </div>
+        <>
+          <div className={styles.kpiGrid}>
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className={styles.skeletonCard} />
+            ))}
+          </div>
+          <div className={styles.kpiChartFullBleedDivider} aria-hidden />
+        </>
       ) : summary && (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
@@ -357,6 +397,7 @@ export function FinancialPerformanceSection({
               </div>
             </div>
           </div>
+          <div className={styles.kpiChartFullBleedDivider} aria-hidden />
           {(startDate || endDate) && (
             <p
               style={{
@@ -372,13 +413,18 @@ export function FinancialPerformanceSection({
         </>
       )}
 
-      <div className={styles.chartSection}>
+      <div
+        className={`${styles.chartSection} ${
+          narrowChartLayout ? styles.chartSectionFullBleed : ''
+        }`.trim()}
+      >
         <h2 className={styles.chartTitle}>Revenue, Expenses & Gross Profit</h2>
         <p className={styles.chartSubtitle}>
           Projection uses your full monthly history (anchored after the latest month). The date range
           only selects which months are shown on the chart.
         </p>
         <FilterBar
+          variant="plain"
           startDate={startDate}
           onStartDateChange={setStartDate}
           endDate={endDate}
@@ -408,21 +454,37 @@ export function FinancialPerformanceSection({
                 </div>
               ) : null}
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartRowsForPlot} margin={{ top: 10, right: 12, left: 4, bottom: 12 }}>
+                <LineChart
+                  data={chartRowsForPlot}
+                  margin={{
+                    top: 12,
+                    right: narrowChartLayout ? 8 : 14,
+                    left: narrowChartLayout ? 2 : 6,
+                    bottom: lineChartBottomMargin,
+                  }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
                   <XAxis
                     dataKey="period"
                     stroke="var(--color-secondary-text)"
-                    tick={{ fontSize: 12, fill: 'var(--color-secondary-text)' }}
-                    minTickGap={28}
+                    tick={{
+                      fontSize: narrowChartLayout ? 10 : 12,
+                      fill: 'var(--color-secondary-text)',
+                    }}
+                    minTickGap={narrowChartLayout ? 16 : 28}
                     interval="preserveStartEnd"
                   />
                   <YAxis
                     stroke="var(--color-secondary-text)"
-                    tick={{ fontSize: 13, fill: 'var(--color-secondary-text)' }}
-                    tickFormatter={formatChartAxisGBP}
-                    tickMargin={8}
-                    width={58}
+                    tick={{
+                      fontSize: narrowChartLayout ? 10 : 13,
+                      fill: 'var(--color-secondary-text)',
+                      dx: narrowChartLayout ? -2 : 0,
+                    }}
+                    tickFormatter={narrowChartLayout ? formatChartAxisGBPNarrow : formatChartAxisGBP}
+                    tickMargin={narrowChartLayout ? 1 : 8}
+                    width={narrowChartLayout ? 34 : 58}
+                    tickCount={narrowChartLayout ? 4 : undefined}
                     domain={chartYDomain}
                   />
                   <Tooltip
@@ -451,25 +513,22 @@ export function FinancialPerformanceSection({
                     }}
                   />
                   <Legend
-                    wrapperStyle={{ cursor: 'pointer' }}
-                    onClick={onDataChartLegendClick}
-                    formatter={(value, entry) => (
-                      <span
-                        style={{
-                          opacity: legendEntryDimmed(
-                            dataChartLegendHidden,
-                            entry.dataKey,
-                            DATA_CHART_ACTUAL_PROJ_PAIRS
-                          )
-                            ? 0.45
-                            : 1,
-                        }}
-                      >
-                        {value}
-                      </span>
+                    verticalAlign="bottom"
+                    align="center"
+                    wrapperStyle={{ ...structuredLegendWrapperStyle, paddingTop: 0 }}
+                    content={(legendProps) => (
+                      <StructuredChartLegend
+                        payload={legendProps.payload}
+                        hidden={dataChartLegendHidden}
+                        dimPairs={DATA_CHART_ACTUAL_PROJ_PAIRS}
+                        onItemClick={onDataChartLegendClick}
+                        rows={dataChartLegendRows}
+                        shortLabels={DATA_CHART_LEGEND_SHORT_LABELS}
+                      />
                     )}
                   />
                   <Line
+                    key={`rev-${!dataChartLegendHidden.has('revenue')}`}
                     type="monotone"
                     dataKey="revenue"
                     name="Revenue"
@@ -477,9 +536,11 @@ export function FinancialPerformanceSection({
                     strokeWidth={2}
                     dot={{ r: 3 }}
                     isAnimationActive={chartLineAnim}
+                    animationDuration={chartLineAnim ? 600 : 0}
                     hide={dataChartLegendHidden.has('revenue')}
                   />
                   <Line
+                    key={`exp-${!dataChartLegendHidden.has('expenses')}`}
                     type="monotone"
                     dataKey="expenses"
                     name="Expenses"
@@ -487,9 +548,11 @@ export function FinancialPerformanceSection({
                     strokeWidth={2}
                     dot={{ r: 3 }}
                     isAnimationActive={chartLineAnim}
+                    animationDuration={chartLineAnim ? 600 : 0}
                     hide={dataChartLegendHidden.has('expenses')}
                   />
                   <Line
+                    key={`gp-${!dataChartLegendHidden.has('grossProfit')}`}
                     type="monotone"
                     dataKey="grossProfit"
                     name="Gross Profit"
@@ -497,11 +560,13 @@ export function FinancialPerformanceSection({
                     strokeWidth={2}
                     dot={{ r: 3 }}
                     isAnimationActive={chartLineAnim}
+                    animationDuration={chartLineAnim ? 600 : 0}
                     hide={dataChartLegendHidden.has('grossProfit')}
                   />
                   {showProjectedSeries ? (
                     <>
                       <Line
+                        key={`revp-${!projectedLineHidden(dataChartLegendHidden, 'revenue', 'revProj')}`}
                         type="monotone"
                         dataKey="revProj"
                         name="Revenue (projected)"
@@ -511,6 +576,7 @@ export function FinancialPerformanceSection({
                         dot={false}
                         connectNulls
                         isAnimationActive={chartLineAnim}
+                        animationDuration={chartLineAnim ? 600 : 0}
                         hide={projectedLineHidden(
                           dataChartLegendHidden,
                           'revenue',
@@ -518,6 +584,7 @@ export function FinancialPerformanceSection({
                         )}
                       />
                       <Line
+                        key={`expp-${!projectedLineHidden(dataChartLegendHidden, 'expenses', 'expProj')}`}
                         type="monotone"
                         dataKey="expProj"
                         name="Expenses (projected)"
@@ -527,6 +594,7 @@ export function FinancialPerformanceSection({
                         dot={false}
                         connectNulls
                         isAnimationActive={chartLineAnim}
+                        animationDuration={chartLineAnim ? 600 : 0}
                         hide={projectedLineHidden(
                           dataChartLegendHidden,
                           'expenses',
@@ -534,6 +602,7 @@ export function FinancialPerformanceSection({
                         )}
                       />
                       <Line
+                        key={`gpp-${!projectedLineHidden(dataChartLegendHidden, 'grossProfit', 'gpProj')}`}
                         type="monotone"
                         dataKey="gpProj"
                         name="Gross profit (projected)"
@@ -543,6 +612,7 @@ export function FinancialPerformanceSection({
                         dot={false}
                         connectNulls
                         isAnimationActive={chartLineAnim}
+                        animationDuration={chartLineAnim ? 600 : 0}
                         hide={projectedLineHidden(
                           dataChartLegendHidden,
                           'grossProfit',
@@ -561,6 +631,7 @@ export function FinancialPerformanceSection({
                     period={period}
                     steps={dataProjectionSteps}
                     onStepsChange={setDataProjectionSteps}
+                    className={narrowChartLayout ? styles.overviewProjectionFooterInset : ''}
                   />
                 ) : null}
                 <ChartNarration

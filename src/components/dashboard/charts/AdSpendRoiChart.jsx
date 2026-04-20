@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   ComposedChart,
   Scatter,
@@ -13,7 +14,11 @@ import {
 } from 'recharts';
 import { useLegendToggleGroups } from '../../../hooks/useLegendToggleGroups';
 import { useReducedMotionSetting } from '../../../context/ReducedMotionContext';
-import { legendEntryDimmed } from '../../../utils/chartLegendVisibility';
+import {
+  StructuredChartLegend,
+  structuredLegendChartBottom,
+  structuredLegendWrapperStyle,
+} from '../StructuredChartLegend';
 import { chartColors, chartLinearTrendStroke } from '../../../theme';
 import { paddedNumericDomain } from '../../../utils/chartAxisDomain';
 import { olsSlopeIntercept } from '../../../utils/chartSeriesRange';
@@ -28,6 +33,13 @@ const AD_SPEND_ROI_LEGEND_GROUPS = {
   scatter: ['total_revenue'],
   linearTrend: [TREND_DATA_KEY],
 };
+
+const AD_SPEND_ROI_LEGEND_SHORT_LABELS = {
+  total_revenue: 'Points',
+  [TREND_DATA_KEY]: 'OLS fit',
+};
+
+const AD_SPEND_ROI_DASHED_SWATCH_KEYS = new Set([TREND_DATA_KEY]);
 
 const AD_SPEND_ROI_TOOLTIP_PANEL_STYLE = {
   background: 'var(--color-card-bg)',
@@ -110,7 +122,7 @@ function AdSpendRoiTooltip({ active, payload }) {
         active={active}
         payload={synthetic}
         formatter={(value, name) =>
-          value != null && Number.isFinite(Number(value)) ? [formatGbp(Number(value)), name] : ['—', name]
+          value != null && Number.isFinite(Number(value)) ? [formatGbp(Number(value)), name] : ['-', name]
         }
         contentStyle={{
           background: 'transparent',
@@ -168,9 +180,16 @@ export function AdSpendRoiChart({ data }) {
     { padRatio: 0.06 }
   );
 
+  const legendRows = useMemo(() => {
+    const rows = [['total_revenue']];
+    if (trendLine) rows.push([TREND_DATA_KEY]);
+    return rows;
+  }, [trendLine]);
+  const legendBottom = useMemo(() => structuredLegendChartBottom(legendRows), [legendRows]);
+
   return (
     <ResponsiveContainer width="100%" height={320}>
-      <ComposedChart margin={{ top: 10, right: 14, left: 6, bottom: 10 }}>
+      <ComposedChart margin={{ top: 10, right: 14, left: 6, bottom: legendBottom }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
         <XAxis
           type="number"
@@ -199,16 +218,19 @@ export function AdSpendRoiChart({ data }) {
           content={(tipProps) => <AdSpendRoiTooltip {...tipProps} />}
         />
         <Legend
-          wrapperStyle={{ cursor: 'pointer' }}
-          onClick={onLegendClick}
-          formatter={(value, entry) => (
-            <span
-              style={{
-                opacity: legendEntryDimmed(hidden, entry.dataKey, []) ? 0.45 : 1,
-              }}
-            >
-              {value}
-            </span>
+          verticalAlign="bottom"
+          align="center"
+          wrapperStyle={structuredLegendWrapperStyle}
+          content={(lp) => (
+            <StructuredChartLegend
+              payload={lp.payload}
+              hidden={hidden}
+              dimPairs={[]}
+              onItemClick={onLegendClick}
+              rows={legendRows}
+              shortLabels={AD_SPEND_ROI_LEGEND_SHORT_LABELS}
+              dashedKeys={AD_SPEND_ROI_DASHED_SWATCH_KEYS}
+            />
           )}
         />
         {trendLine ? (

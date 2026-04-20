@@ -1,5 +1,5 @@
 /**
- * PredictIQ design tokens — single source of truth for colors and spacing.
+ * PredictIQ design tokens: single source of truth for colors and spacing.
  * Used by ThemeContext and any component that needs theme values in JS.
  */
 export const tokens = {
@@ -43,7 +43,7 @@ export const tokens = {
   },
 };
 
-/** Stroke/fill for Recharts — use for every projected series */
+/** Stroke/fill for Recharts; use for every projected series */
 export const chartProjectionStroke = 'var(--color-chart-projection)';
 
 /** OLS / linear regression line on elasticity & ad spend ROI scatters (theme via ThemeProvider) */

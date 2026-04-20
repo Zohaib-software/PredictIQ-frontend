@@ -21,12 +21,16 @@ export function ExpenseVolatilityGauge({ data }) {
     <div
       style={{
         width: '100%',
+        maxWidth: '100%',
+        minWidth: 0,
         height: '100%',
         minHeight: 260,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
       <div
@@ -34,31 +38,36 @@ export function ExpenseVolatilityGauge({ data }) {
           position: 'relative',
           width: '100%',
           maxWidth: 'min(420px, 100%)',
+          minWidth: 0,
           flex: '0 1 auto',
           height: 'min(300px, 100%)',
+          marginLeft: 'auto',
+          marginRight: 'auto',
           transform: 'translateY(4%)',
         }}
       >
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={gaugeData}
-              cx="50%"
-              cy="58%"
-              startAngle={180}
-              endAngle={0}
-              innerRadius="47%"
-              outerRadius="88%"
-              dataKey="value"
-              stroke="none"
-              isAnimationActive={!reducedMotionEnabled}
-            >
-              {gaugeData.map((entry, i) => (
-                <Cell key={i} fill={entry.color} />
-              ))}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
+        <div style={{ width: '100%', height: '100%', minWidth: 0, minHeight: 0 }}>
+          <ResponsiveContainer width="100%" height="100%" style={{ display: 'block' }}>
+            <PieChart>
+              <Pie
+                data={gaugeData}
+                cx="50%"
+                cy="58%"
+                startAngle={180}
+                endAngle={0}
+                innerRadius="47%"
+                outerRadius="88%"
+                dataKey="value"
+                stroke="none"
+                isAnimationActive={!reducedMotionEnabled}
+              >
+                {gaugeData.map((entry, i) => (
+                  <Cell key={i} fill={entry.color} />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
         <div
           style={{
             position: 'absolute',

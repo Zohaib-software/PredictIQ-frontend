@@ -105,7 +105,11 @@ export function OverviewPage() {
 
       <div className={styles.layoutStack}>
         <div className={styles.rowFull}>
-          <SummaryCard title="Cash Flow Forecast">
+          <SummaryCard
+            title="Cash Flow Forecast"
+            variant="overviewForecastMobile"
+            className={styles.overviewForecastShell}
+          >
             {forecast.loading && (
               <p className={styles.forecastMuted}>Loading forecast…</p>
             )}
@@ -123,6 +127,7 @@ export function OverviewPage() {
                   forecast90={forecast90}
                   baselineCashFlow={forecastBaselineCashFlow}
                   recentCashFlows={recentHistoricalCashFlows}
+                  layout="kpiList"
                 />
                 <div className={styles.forecastDownloadWrap}>
                   <button

@@ -32,6 +32,9 @@
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-xl: 24px;
+  /* FilterBar row: vertical padding, bottom margin below bar on viewports ≤768px (DataPage.module.css, ChartCard.module.css) */
+  --filters-bar-padding-y-mobile: 10px;
+  --filters-bar-padding-inline-mobile: 10px;
   /* Motion */
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
@@ -44,6 +47,8 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  /* Remove default WebKit/mobile tap flash (blue/grey overlay on touch) */
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
@@ -166,13 +171,13 @@ svg {
 }
 
 /**
- * Shared buttons — aligned with SettingsPage:
+ * Shared buttons, aligned with SettingsPage:
  * - `.dangerBtn` (Delete account) for teal primary + hover
- * - `.pq-btn-danger-red` row/upload delete — red; hover stays red (darker)
+ * - `.pq-btn-danger-red` row/upload delete: red; hover stays red (darker)
  * - `.actionBtn` (2FA backup Copy / Download) for outline + hover
  */
 
-/* SettingsPage `.dangerBtn` — solid accent, dark label, teal glow on hover */
+/* SettingsPage `.dangerBtn`: solid accent, dark label, teal glow on hover */
 .pq-btn-danger-zone {
   display: inline-flex;
   align-items: center;
@@ -208,7 +213,7 @@ svg {
   box-shadow: none;
 }
 
-/* Red destructive — stays red on hover (darker shade + subtle red focus ring) */
+/* Red destructive: stays red on hover (darker shade + subtle red focus ring) */
 .pq-btn-danger-red {
   display: inline-flex;
   align-items: center;
@@ -244,7 +249,7 @@ svg {
   box-shadow: none;
 }
 
-/* SettingsPage `.actionBtn` — 2FA backup Copy / Download */
+/* SettingsPage `.actionBtn`: 2FA backup Copy / Download */
 .pq-btn-backup-action {
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-sm);
@@ -285,7 +290,7 @@ svg {
   font-size: 0.8rem;
 }
 
-/* CSV upload — Previous uploads delete */
+/* CSV upload: Previous uploads delete */
 .pq-btn-danger-red.pq-btn--upload-history {
   padding: 0.3rem 0.55rem;
   font-size: 0.76rem;
@@ -315,3 +320,32 @@ svg {
  * subtle ways. Motion is handled by MotionConfig + chart `isAnimationActive`; transitions
  * use the shortened design tokens above wherever components use var(--transition-*).
  */
+
+/* Recharts: avoid extra empty space under custom legend content (StructuredChartLegend). */
+.recharts-legend-wrapper {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Recharts legends: remove mobile WebKit tap flash (large blue overlay) when toggling series */
+@media (max-width: 1024px) {
+  .recharts-legend-wrapper,
+  .recharts-default-legend,
+  .recharts-legend-item {
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+  }
+
+  .recharts-legend-item:active {
+    background: transparent !important;
+  }
+
+  .recharts-legend-item:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  .recharts-legend-item:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}

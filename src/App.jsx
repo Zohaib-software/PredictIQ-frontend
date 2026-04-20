@@ -58,13 +58,13 @@ export default function App() {
         <ReducedMotionProvider>
           <AuthProvider>
             <NotificationProvider>
-              <ErrorBoundary>
-                <BrowserRouter
-                  future={{
-                    v7_startTransition: true,
-                    v7_relativeSplatPath: true,
-                  }}
-                >
+              <BrowserRouter
+                future={{
+                  v7_startTransition: true,
+                  v7_relativeSplatPath: true,
+                }}
+              >
+                <ErrorBoundary>
                   <a href="#main-content" className="skip-link">
                     Skip to main content
                   </a>
@@ -109,8 +109,8 @@ export default function App() {
                     </Route>
                     <Route path="*" element={<ErrorPage />} />
                   </Routes>
-                </BrowserRouter>
-              </ErrorBoundary>
+                </ErrorBoundary>
+              </BrowserRouter>
             </NotificationProvider>
           </AuthProvider>
         </ReducedMotionProvider>

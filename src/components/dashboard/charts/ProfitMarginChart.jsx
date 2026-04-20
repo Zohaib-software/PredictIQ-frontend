@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -14,17 +15,21 @@ import { useReducedMotionSetting } from '../../../context/ReducedMotionContext';
 import { useLegendToggleGroups } from '../../../hooks/useLegendToggleGroups';
 import {
   filterTooltipPayloadPreferActualOverProjection,
-  legendEntryDimmed,
   projectedLineHidden,
   tooltipDatumHasActualValue,
 } from '../../../utils/chartLegendVisibility';
+import {
+  StructuredChartLegend,
+  structuredLegendChartBottom,
+  structuredLegendWrapperStyle,
+} from '../StructuredChartLegend';
 import { chartProjectionStroke } from '../../../theme';
 import { paddedNumericDomain } from '../../../utils/chartAxisDomain';
 import { formatDecimal, formatGbp, formatPercentPoints } from '../../../utils/displayFormat';
 import { addMonthsToPeriodLabel, projectForwardIndices } from '../../../utils/seriesProjection';
 import { filterForecastChartRowsByDateRange } from '../../../utils/forecastChartDisplay';
 
-/** Historical margin — success green */
+/** Historical margin (success green) */
 const HIST_LINE = 'var(--color-success)';
 
 const PROFIT_MARGIN_LEGEND_GROUPS = {
@@ -35,6 +40,10 @@ const PROFIT_MARGIN_LEGEND_GROUPS = {
 const PROFIT_MARGIN_ACTUAL_PROJ_PAIRS = [
   { actual: 'profit_margin', projected: 'marginProj' },
 ];
+
+const PROFIT_MARGIN_LEGEND_SHORT_LABELS = {
+  marginProj: 'Proj.',
+};
 
 const PROFIT_MARGIN_TOOLTIP_PANEL_STYLE = {
   background: 'var(--color-card-bg)',
@@ -192,13 +201,19 @@ export function ProfitMarginChart({
     chartRows.some((r) => r.marginProj != null);
   const lineAnim = !reducedMotionEnabled && chartRows.length <= 60;
 
+  const legendRows = useMemo(
+    () => (showProj ? [['profit_margin'], ['marginProj']] : [['profit_margin']]),
+    [showProj]
+  );
+  const legendBottom = useMemo(() => structuredLegendChartBottom(legendRows), [legendRows]);
+
   return (
     <ResponsiveContainer width="100%" height={320}>
       <LineChart
         data={chartRows}
         margin={{
           top: 10,
-          bottom: 10,
+          bottom: Math.max(10, legendBottom),
           /* Recharts adds default YAxis width (60) to margin.left, which skews the plot right.
              Keep left+right inset sum stable so plot width unchanged while balancing gutters. */
           left: 2,
@@ -223,18 +238,18 @@ export function ProfitMarginChart({
           content={(tipProps) => <ProfitMarginTooltip {...tipProps} />}
         />
         <Legend
-          wrapperStyle={{ cursor: 'pointer' }}
-          onClick={onLegendClick}
-          formatter={(value, entry) => (
-            <span
-              style={{
-                opacity: legendEntryDimmed(hidden, entry.dataKey, PROFIT_MARGIN_ACTUAL_PROJ_PAIRS)
-                  ? 0.45
-                  : 1,
-              }}
-            >
-              {value}
-            </span>
+          verticalAlign="bottom"
+          align="center"
+          wrapperStyle={structuredLegendWrapperStyle}
+          content={(lp) => (
+            <StructuredChartLegend
+              payload={lp.payload}
+              hidden={hidden}
+              dimPairs={PROFIT_MARGIN_ACTUAL_PROJ_PAIRS}
+              onItemClick={onLegendClick}
+              rows={legendRows}
+              shortLabels={PROFIT_MARGIN_LEGEND_SHORT_LABELS}
+            />
           )}
         />
         <Line

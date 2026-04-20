@@ -30,9 +30,14 @@ import {
 import { filterForecastChartRowsByDateRange } from '../../utils/forecastChartDisplay';
 import { useFinancialRecords } from '../../context/FinancialRecordsContext';
 import { parseMonthlyLabelToYm } from '../../utils/seriesProjection';
+import {
+  computeSmallScreenDefaultIsoDatesFromMonthlyRecords,
+  matchesSmallScreenForDefaultChartDates,
+} from '../../utils/smallScreenDefaultChartDateRange';
 import { useChartFilters } from '../../hooks/useChartFilters';
 import { expenseAnomalyProjectionVisibleInDateRange } from '../../utils/expenseAnomalyProjectionUi';
 import pageStyles from './DashboardPages.module.css';
+import chartLayoutStyles from './DataPage.module.css';
 import styles from './ReportsPage.module.css';
 
 function toIsoMonthStart(periodLabel) {
@@ -74,7 +79,7 @@ function pearsonCorrelation(xs, ys) {
   return Math.max(-1, Math.min(1, numerator / denominator));
 }
 
-function CostAnalysisTab({ highlightPeriod, anomalyFocusKey }) {
+function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout }) {
   const prevAnomalyFocusRef = useRef(null);
   const [breakdownStartDate, setBreakdownStartDate] = useState('');
   const [breakdownEndDate, setBreakdownEndDate] = useState('');
@@ -106,40 +111,94 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey }) {
   const [funnelStartDate, setFunnelStartDate] = useState('');
   const [funnelEndDate, setFunnelEndDate] = useState('');
 
+  const reportsCostTabDateInitRef = useRef({ consumed: false, userResetFilters: false });
+  const markReportsCostTabDateFilterResetIntent = () => {
+    reportsCostTabDateInitRef.current.userResetFilters = true;
+    reportsCostTabDateInitRef.current.consumed = true;
+  };
+
   const resetVolatilityDateRange = () => {
+    markReportsCostTabDateFilterResetIntent();
     setVolatilityStartDate('');
     setVolatilityEndDate('');
   };
 
   const resetBreakdownDateRange = () => {
+    markReportsCostTabDateFilterResetIntent();
     setBreakdownStartDate('');
     setBreakdownEndDate('');
   };
 
   const resetCorrelationDateRange = () => {
+    markReportsCostTabDateFilterResetIntent();
     setCorrelationStartDate('');
     setCorrelationEndDate('');
   };
 
   const resetAnomalyDateRange = () => {
+    markReportsCostTabDateFilterResetIntent();
     setAnomalyStartDate('');
     setAnomalyEndDate('');
   };
 
   const resetMarginDateRange = () => {
+    markReportsCostTabDateFilterResetIntent();
     setMarginStartDate('');
     setMarginEndDate('');
   };
 
   const resetElasticityDateRange = () => {
+    markReportsCostTabDateFilterResetIntent();
     setElasticityStartDate('');
     setElasticityEndDate('');
   };
 
   const resetFunnelDateRange = () => {
+    markReportsCostTabDateFilterResetIntent();
     setFunnelStartDate('');
     setFunnelEndDate('');
   };
+
+  useEffect(() => {
+    if (reportsCostTabDateInitRef.current.consumed) return;
+    if (costsSummary.loading) return;
+    const periodList = anomaly?.date ?? [];
+    const records = periodList.map((period) => ({ period }));
+    if (records.length === 0) return;
+
+    if (reportsCostTabDateInitRef.current.userResetFilters) {
+      reportsCostTabDateInitRef.current.consumed = true;
+      return;
+    }
+
+    if (!matchesSmallScreenForDefaultChartDates()) {
+      reportsCostTabDateInitRef.current.consumed = true;
+      return;
+    }
+
+    const range = computeSmallScreenDefaultIsoDatesFromMonthlyRecords(records);
+    if (!range) {
+      reportsCostTabDateInitRef.current.consumed = true;
+      return;
+    }
+
+    reportsCostTabDateInitRef.current.consumed = true;
+    const { startDate: sd, endDate: ed } = range;
+    setBreakdownStartDate(sd);
+    setBreakdownEndDate(ed);
+    setVolatilityStartDate(sd);
+    setVolatilityEndDate(ed);
+    setCorrelationStartDate(sd);
+    setCorrelationEndDate(ed);
+    setAnomalyStartDate(sd);
+    setAnomalyEndDate(ed);
+    setMarginStartDate(sd);
+    setMarginEndDate(ed);
+    setElasticityStartDate(sd);
+    setElasticityEndDate(ed);
+    setFunnelStartDate(sd);
+    setFunnelEndDate(ed);
+  }, [costsSummary.loading, anomaly?.date]);
 
   const filteredVolatilityData = useMemo(() => {
     const volatilityBase = expenseVolatilityGauge.data;
@@ -423,11 +482,20 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey }) {
     return () => window.clearTimeout(t);
   }, [highlightPeriod, anomalyDisplay, anomalyFocusKey]);
 
+  const chartShell = (node) =>
+    narrowLayout ? <div className={styles.reportsChartFitContent}>{node}</div> : node;
+
   return (
-    <div className={pageStyles.layoutStack}>
-      <div className={`${pageStyles.rowTwoColumn} ${styles.costAnalysisRowOne}`}>
+    <div className={narrowLayout ? styles.reportsTabStackMobile : pageStyles.layoutStack}>
+      <div
+        className={`${pageStyles.rowTwoColumn} ${styles.costAnalysisRowOne} ${
+          narrowLayout ? chartLayoutStyles.chartSectionFullBleed : ''
+        } ${narrowLayout ? styles.reportsCostRowOneMobile : ''}`.trim()}
+        style={narrowLayout ? { gap: 0 } : undefined}
+      >
         <CostViewToggleCard
-          className={`${pageStyles.twoColumnCard} ${styles.rowOneCellFill}`}
+          className={`${narrowLayout ? '' : pageStyles.twoColumnCard} ${styles.rowOneCellFill}`.trim()}
+          narrowLayout={narrowLayout}
           volatilityData={filteredVolatilityData}
           volatilityLoading={expenseVolatilityGauge.loading}
           volatilityError={expenseVolatilityGauge.error}
@@ -448,9 +516,11 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey }) {
           onResetBreakdownDateRange={resetBreakdownDateRange}
         />
         <ChartCard
-          className={`${pageStyles.twoColumnCard} ${styles.rowOneCellFill}`}
+          className={`${narrowLayout ? '' : pageStyles.twoColumnCard} ${styles.rowOneCellFill}`.trim()}
+          flatLayout={narrowLayout}
+          filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Correlation Heatmap"
-          subtitle="Pairwise correlation between revenue, total expenses, gross profit, and other expenses (total expenses minus the marketing portion)—stronger values mean those metrics tend to move together."
+          subtitle="Pairwise correlation between revenue, total expenses, gross profit, and other expenses (total expenses minus the marketing portion). Stronger values mean those metrics tend to move together."
           loading={correlationHeatmap.loading}
           error={correlationHeatmap.error}
           hasData={hasCorrelationHeatmapData}
@@ -462,16 +532,31 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey }) {
               onEndDateChange={setCorrelationEndDate}
               onReset={resetCorrelationDateRange}
               idPrefix="reports-correlation-date-range"
-              variant="embedded"
+              variant="plain"
             />
           }
         >
-          <CorrelationHeatmap data={filteredCorrelationHeatmap} />
+          {narrowLayout ? (
+            <div
+              className={`${chartLayoutStyles.chartPlotCompact} ${styles.reportsCorrelationHeatmapPlotMobile}`}
+            >
+              <CorrelationHeatmap data={filteredCorrelationHeatmap} intrinsicHeight />
+            </div>
+          ) : (
+            <CorrelationHeatmap data={filteredCorrelationHeatmap} />
+          )}
         </ChartCard>
       </div>
-      <div id="expense-anomaly-detection" className={pageStyles.rowFullTall}>
+      <div
+        id="expense-anomaly-detection"
+        className={`${pageStyles.rowFullTall} ${
+          narrowLayout ? chartLayoutStyles.chartSectionFullBleed : ''
+        }`.trim()}
+      >
         <ChartCard
-          className={pageStyles.fullWidthTallCard}
+          className={narrowLayout ? '' : pageStyles.fullWidthTallCard}
+          flatLayout={narrowLayout}
+          filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Expense anomaly detection"
           subtitle="Monthly expense totals versus a trend line and upper/lower bands; months outside the bands are flagged as unusual spending."
           showProjectionControls={
@@ -491,25 +576,45 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey }) {
               onEndDateChange={setAnomalyEndDate}
               onReset={resetAnomalyDateRange}
               idPrefix="reports-costs-anomaly-date-range"
-              variant="embedded"
+              variant="plain"
             />
           }
           projectionMonths={anomalyFilters.projectionMonths}
           onProjectionChange={anomalyFilters.setProjectionMonths}
         >
-          <ExpenseAnomalyChart
-            data={anomalyFitFull}
-            startDate={anomalyStartDate}
-            endDate={anomalyEndDate}
-            projectionMonths={anomalyFilters.projectionMonths}
-            highlightPeriod={highlightPeriod}
-            enableProjection={anomalyShowProjectionUi}
-          />
+          {narrowLayout ? (
+            <div className={styles.reportsChartFitContent}>
+              <ExpenseAnomalyChart
+                data={anomalyFitFull}
+                startDate={anomalyStartDate}
+                endDate={anomalyEndDate}
+                projectionMonths={anomalyFilters.projectionMonths}
+                highlightPeriod={highlightPeriod}
+                enableProjection={anomalyShowProjectionUi}
+              />
+            </div>
+          ) : (
+            <ExpenseAnomalyChart
+              data={anomalyFitFull}
+              startDate={anomalyStartDate}
+              endDate={anomalyEndDate}
+              projectionMonths={anomalyFilters.projectionMonths}
+              highlightPeriod={highlightPeriod}
+              enableProjection={anomalyShowProjectionUi}
+            />
+          )}
         </ChartCard>
       </div>
-      <div className={pageStyles.rowTwoColumn}>
+      <div
+        className={`${pageStyles.rowTwoColumn} ${
+          narrowLayout ? chartLayoutStyles.chartSectionFullBleed : ''
+        } ${narrowLayout ? styles.reportsCostRowOneMobile : ''}`.trim()}
+        style={narrowLayout ? { gap: 0 } : undefined}
+      >
         <ChartCard
-          className={pageStyles.twoColumnCard}
+          className={narrowLayout ? '' : pageStyles.twoColumnCard}
+          flatLayout={narrowLayout}
+          filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Profit Margin % Over Time"
           subtitle="Gross profit as a percentage of revenue by month so you can see whether each pound of sales retains more or less profit over time."
           showProjectionControls={
@@ -529,22 +634,36 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey }) {
               onEndDateChange={setMarginEndDate}
               onReset={resetMarginDateRange}
               idPrefix="reports-costs-margin-date-range"
-              variant="embedded"
+              variant="plain"
             />
           }
           projectionMonths={marginFilters.projectionMonths}
           onProjectionChange={marginFilters.setProjectionMonths}
         >
-          <ProfitMarginChart
-            data={profitMarginSliced}
-            startDate={marginStartDate}
-            endDate={marginEndDate}
-            projectionMonths={marginFilters.projectionMonths}
-            enableProjection={profitMarginShowProjectionUi}
-          />
+          {narrowLayout ? (
+            <div className={styles.reportsChartFitContent}>
+              <ProfitMarginChart
+                data={profitMarginSliced}
+                startDate={marginStartDate}
+                endDate={marginEndDate}
+                projectionMonths={marginFilters.projectionMonths}
+                enableProjection={profitMarginShowProjectionUi}
+              />
+            </div>
+          ) : (
+            <ProfitMarginChart
+              data={profitMarginSliced}
+              startDate={marginStartDate}
+              endDate={marginEndDate}
+              projectionMonths={marginFilters.projectionMonths}
+              enableProjection={profitMarginShowProjectionUi}
+            />
+          )}
         </ChartCard>
         <ChartCard
-          className={pageStyles.twoColumnCard}
+          className={narrowLayout ? '' : pageStyles.twoColumnCard}
+          flatLayout={narrowLayout}
+          filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Efficiency Funnel"
           subtitle="Compares revenue with operating profit and net profit after all recorded costs so you can see how much revenue survives each stage."
           loading={costsSummary.loading}
@@ -558,16 +677,22 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey }) {
               onEndDateChange={setFunnelEndDate}
               onReset={resetFunnelDateRange}
               idPrefix="reports-costs-funnel-date-range"
-              variant="embedded"
+              variant="plain"
             />
           }
         >
-          <EfficiencyFunnelChart data={efficiencyFunnelDisplay} />
+          {chartShell(<EfficiencyFunnelChart data={efficiencyFunnelDisplay} />)}
         </ChartCard>
       </div>
-      <div className={pageStyles.rowFullTall}>
+      <div
+        className={`${pageStyles.rowFullTall} ${
+          narrowLayout ? chartLayoutStyles.chartSectionFullBleed : ''
+        }`.trim()}
+      >
         <ChartCard
-          className={pageStyles.fullWidthTallCard}
+          className={narrowLayout ? '' : pageStyles.fullWidthTallCard}
+          flatLayout={narrowLayout}
+          filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Expense vs Revenue Elasticity Curve"
           subtitle="Each point is one month’s paired expense and revenue change vs the prior month; the line is the regression fit (elasticity)."
           showProjectionControls={
@@ -588,26 +713,39 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey }) {
               onEndDateChange={setElasticityEndDate}
               onReset={resetElasticityDateRange}
               idPrefix="reports-costs-elasticity-date-range"
-              variant="embedded"
+              variant="plain"
             />
           }
           projectionMonths={elasticityFilters.projectionMonths}
           onProjectionChange={elasticityFilters.setProjectionMonths}
         >
-          <ElasticityChart
-            data={expenseRevenueElasticity.data}
-            startDate={elasticityStartDate}
-            endDate={elasticityEndDate}
-            projectionMonths={elasticityFilters.projectionMonths}
-            enableProjection={elasticityShowProjectionUi}
-          />
+          {narrowLayout ? (
+            <div className={styles.reportsChartFitContent}>
+              <ElasticityChart
+                narrowLayout
+                data={expenseRevenueElasticity.data}
+                startDate={elasticityStartDate}
+                endDate={elasticityEndDate}
+                projectionMonths={elasticityFilters.projectionMonths}
+                enableProjection={elasticityShowProjectionUi}
+              />
+            </div>
+          ) : (
+            <ElasticityChart
+              data={expenseRevenueElasticity.data}
+              startDate={elasticityStartDate}
+              endDate={elasticityEndDate}
+              projectionMonths={elasticityFilters.projectionMonths}
+              enableProjection={elasticityShowProjectionUi}
+            />
+          )}
         </ChartCard>
       </div>
     </div>
   );
 }
 
-function MarketingPerformanceTab() {
+function MarketingPerformanceTab({ narrowLayout }) {
   const { hasFinancialRecords } = useFinancialRecords();
   const [adRevStartDate, setAdRevStartDate] = useState('');
   const [adRevEndDate, setAdRevEndDate] = useState('');
@@ -619,6 +757,48 @@ function MarketingPerformanceTab() {
   const adSpendRevenue = useChart(chartsApi.adSpendRevenue);
   const adSpendRoi = useChart(chartsApi.adSpendRoi);
   const roiHistogram = useChart(chartsApi.roiDistributionHistogram);
+
+  const marketingTabDateInitRef = useRef({ consumed: false, userResetFilters: false });
+  const markMarketingTabDateFilterResetIntent = () => {
+    marketingTabDateInitRef.current.userResetFilters = true;
+    marketingTabDateInitRef.current.consumed = true;
+  };
+
+  useEffect(() => {
+    if (marketingTabDateInitRef.current.consumed) return;
+    if (adSpendRevenue.loading || adSpendRoi.loading) return;
+
+    let records = (adSpendRevenue.data?.date ?? []).map((period) => ({ period }));
+    if (records.length === 0) {
+      records = (adSpendRoi.data?.date ?? []).map((period) => ({ period }));
+    }
+    if (records.length === 0) return;
+
+    if (marketingTabDateInitRef.current.userResetFilters) {
+      marketingTabDateInitRef.current.consumed = true;
+      return;
+    }
+
+    if (!matchesSmallScreenForDefaultChartDates()) {
+      marketingTabDateInitRef.current.consumed = true;
+      return;
+    }
+
+    const range = computeSmallScreenDefaultIsoDatesFromMonthlyRecords(records);
+    if (!range) {
+      marketingTabDateInitRef.current.consumed = true;
+      return;
+    }
+
+    marketingTabDateInitRef.current.consumed = true;
+    const { startDate: sd, endDate: ed } = range;
+    setAdRevStartDate(sd);
+    setAdRevEndDate(ed);
+    setAdRoiStartDate(sd);
+    setAdRoiEndDate(ed);
+    setRoiHistStartDate(sd);
+    setRoiHistEndDate(ed);
+  }, [adSpendRevenue.loading, adSpendRevenue.data, adSpendRoi.loading, adSpendRoi.data]);
 
   const adRevenueFilters = useChartFilters('marketing_ad_spend_revenue');
 
@@ -678,11 +858,20 @@ function MarketingPerformanceTab() {
   const hasRoiHistogramSeries = extractAdSpendRoiValuesForHistogram(roiDisplay).length > 0;
   const hasRoiHistogramFilteredBins = (roiHistogramDisplay?.binLabels ?? []).length > 0;
 
+  const chartShell = (node) =>
+    narrowLayout ? <div className={styles.reportsChartFitContent}>{node}</div> : node;
+
   return (
-    <div className={pageStyles.layoutStack}>
-      <div className={pageStyles.rowFullTall}>
+    <div className={narrowLayout ? styles.reportsTabStackMobile : pageStyles.layoutStack}>
+      <div
+        className={`${pageStyles.rowFullTall} ${
+          narrowLayout ? chartLayoutStyles.chartSectionFullBleed : ''
+        }`.trim()}
+      >
         <ChartCard
-          className={pageStyles.fullWidthTallCard}
+          className={narrowLayout ? '' : pageStyles.fullWidthTallCard}
+          flatLayout={narrowLayout}
+          filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Ad Spend vs Revenue"
           subtitle="Ad spend is the marketing portion of your total expenses. Projection uses full monthly history; the date range only selects which months are shown."
           showProjectionControls
@@ -698,10 +887,12 @@ function MarketingPerformanceTab() {
               endDate={adRevEndDate}
               onEndDateChange={setAdRevEndDate}
               onReset={() => {
+                markMarketingTabDateFilterResetIntent();
                 setAdRevStartDate('');
                 setAdRevEndDate('');
               }}
               idPrefix="reports-marketing-ad-spend-revenue-filter"
+              variant="plain"
             />
           }
         >
@@ -711,16 +902,25 @@ function MarketingPerformanceTab() {
               the full series.
             </p>
           ) : (
-            <AdSpendRevenueChart
-              chartRows={adSpendRevenueChartRows}
-              showProjectedSeries={showAdSpendRevenueProjectedSeries}
-            />
+            chartShell(
+              <AdSpendRevenueChart
+                chartRows={adSpendRevenueChartRows}
+                showProjectedSeries={showAdSpendRevenueProjectedSeries}
+              />
+            )
           )}
         </ChartCard>
       </div>
-      <div className={pageStyles.rowTwoColumn}>
+      <div
+        className={`${pageStyles.rowTwoColumn} ${
+          narrowLayout ? chartLayoutStyles.chartSectionFullBleed : ''
+        } ${narrowLayout ? styles.reportsCostRowOneMobile : ''}`.trim()}
+        style={narrowLayout ? { gap: 0 } : undefined}
+      >
         <ChartCard
-          className={pageStyles.twoColumnCard}
+          className={narrowLayout ? '' : pageStyles.twoColumnCard}
+          flatLayout={narrowLayout}
+          filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Ad Spend ROI Efficiency"
           subtitle="Each bubble is a period: marketing spend on one axis, revenue on the other; bubble size is net profit (revenue minus all expenses, including ad)."
           loading={adSpendRoi.loading}
@@ -733,20 +933,23 @@ function MarketingPerformanceTab() {
               endDate={adRoiEndDate}
               onEndDateChange={setAdRoiEndDate}
               onReset={() => {
+                markMarketingTabDateFilterResetIntent();
                 setAdRoiStartDate('');
                 setAdRoiEndDate('');
               }}
               idPrefix="reports-marketing-ad-roi-date-range"
-              variant="embedded"
+              variant="plain"
             />
           }
         >
-          <AdSpendRoiChart data={adRoiFiltered} />
+          {chartShell(<AdSpendRoiChart data={adRoiFiltered} />)}
         </ChartCard>
         <ChartCard
-          className={pageStyles.twoColumnCard}
+          className={narrowLayout ? '' : pageStyles.twoColumnCard}
+          flatLayout={narrowLayout}
+          filtersBarGapPx={narrowLayout ? 6 : 10}
           title="ROI Distribution Histogram"
-          subtitle="Distribution of net profit (after all expenses) per £ of tracked marketing spend—ad spend is part of total expenses, not subtracted twice."
+          subtitle="Distribution of net profit (after all expenses) per £ of tracked marketing spend. Ad spend is part of total expenses, not subtracted twice."
           loading={adSpendRoi.loading || roiHistogram.loading}
           error={adSpendRoi.error || roiHistogram.error}
           hasData={hasRoiHistogramSeries}
@@ -757,11 +960,12 @@ function MarketingPerformanceTab() {
               endDate={roiHistEndDate}
               onEndDateChange={setRoiHistEndDate}
               onReset={() => {
+                markMarketingTabDateFilterResetIntent();
                 setRoiHistStartDate('');
                 setRoiHistEndDate('');
               }}
               idPrefix="reports-marketing-roi-hist-date-range"
-              variant="embedded"
+              variant="plain"
             />
           }
         >
@@ -771,7 +975,7 @@ function MarketingPerformanceTab() {
               full distribution.
             </p>
           ) : (
-            <RoiHistogramChart data={roiHistogramDisplay} />
+            chartShell(<RoiHistogramChart data={roiHistogramDisplay} />)
           )}
         </ChartCard>
       </div>
@@ -783,8 +987,21 @@ export function ReportsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('cost');
   const [highlightPeriod, setHighlightPeriod] = useState(null);
+  const [narrowLayout, setNarrowLayout] = useState(false);
 
   const anomalyFocusKey = searchParams.get('anomalyFocus');
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      setNarrowLayout(false);
+      return undefined;
+    }
+    const mq = window.matchMedia('(max-width: 768px)');
+    const apply = () => setNarrowLayout(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -843,9 +1060,13 @@ export function ReportsPage() {
       </div>
 
       {activeTab === 'cost' ? (
-        <CostAnalysisTab highlightPeriod={highlightPeriod} anomalyFocusKey={anomalyFocusKey} />
+        <CostAnalysisTab
+          highlightPeriod={highlightPeriod}
+          anomalyFocusKey={anomalyFocusKey}
+          narrowLayout={narrowLayout}
+        />
       ) : (
-        <MarketingPerformanceTab />
+        <MarketingPerformanceTab narrowLayout={narrowLayout} />
       )}
     </motion.div>
   );

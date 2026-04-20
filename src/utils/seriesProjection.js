@@ -176,7 +176,7 @@ export function projectForwardIndices(values, horizon) {
 }
 
 /**
- * Same as {@link projectForwardIndices} but without rounding each step — avoids stacked scatter
+ * Same as {@link projectForwardIndices} but without rounding each step; avoids stacked scatter
  * points when consecutive projected values would round to the same %.
  */
 export function projectForwardIndicesExact(values, horizon) {

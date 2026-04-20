@@ -20,6 +20,12 @@ import {
   projectForwardIndicesExact,
 } from '../../../utils/seriesProjection';
 import styles from './ElasticityChart.module.css';
+import {
+  StructuredChartLegend,
+  structuredLegendChartBottom,
+  structuredLegendWrapperStyle,
+  defaultLegendEntryKey,
+} from '../StructuredChartLegend';
 
 function padDomain1D(min, max, ratio = 0.12) {
   if (!Number.isFinite(min) || !Number.isFinite(max)) return [0, 1];
@@ -59,7 +65,7 @@ function elasticityTooltipHeader(row) {
   const isFit = row.kind === 'fit';
   const isProjected = row.kind === 'projected';
   if (isFit) return 'OLS fit segment';
-  if (isProjected && row.period != null) return `Projected — after ${row.period}`;
+  if (isProjected && row.period != null) return `Projected after ${row.period}`;
   if (!isFit && !isProjected && row.period != null) return `After period ending ${row.period}`;
   return null;
 }
@@ -113,7 +119,7 @@ function ElasticityTooltip({ active, payload }) {
         formatter={(value, name) =>
           value != null && Number.isFinite(Number(value))
             ? [formatPercentPoints(Number(value), 2), name]
-            : ['—', name]
+            : ['-', name]
         }
         contentStyle={{
           background: 'transparent',
@@ -163,12 +169,20 @@ const MONTHS_LEGEND = 'Months (MoM % changes)';
 const FIT_LEGEND = 'OLS fit (elasticity)';
 const PROJECTED_LEGEND = 'Projected';
 
+const ELASTICITY_LEGEND_SHORT_LABELS = {
+  months: 'Months',
+  fit: 'OLS fit',
+  projected: 'Proj.',
+};
+
 export function ElasticityChart({
   data,
   startDate = '',
   endDate = '',
   projectionMonths = 1,
   enableProjection = true,
+  /** Match Overview chart gutters on small viewports (Reports mobile). */
+  narrowLayout = false,
 }) {
   const { hasFinancialRecords } = useFinancialRecords();
   const projectionActive = hasFinancialRecords;
@@ -272,6 +286,58 @@ export function ElasticityChart({
 
   const showProjected = projectedPoints.length > 0;
 
+  const elasticityLegendKey = useCallback((entry) => {
+    const v = String(entry.value ?? '');
+    if (v === MONTHS_LEGEND) return 'months';
+    if (v === FIT_LEGEND) return 'fit';
+    if (v === PROJECTED_LEGEND) return 'projected';
+    return defaultLegendEntryKey(entry);
+  }, []);
+
+  const legendRows = useMemo(
+    () =>
+      showProjected ?
+        [
+          ['months', 'fit'],
+          ['projected'],
+        ]
+      : [['months', 'fit']],
+    [showProjected]
+  );
+  const legendBottom = useMemo(() => structuredLegendChartBottom(legendRows), [legendRows]);
+
+  /**
+   * Gap between x-axis title and legend on narrow viewports (keep small; total margin.bottom also
+   * includes structuredLegendChartBottom, which is tuned for line charts and can over-reserve on scatter).
+   */
+  const NARROW_AXIS_LEGEND_GAP = 6;
+
+  const chartMargin = useMemo(() => {
+    if (!narrowLayout) {
+      return { top: 34, right: 16, bottom: legendBottom, left: 44 };
+    }
+    const rowCount = legendRows.filter((r) => r?.length).length;
+    /** Tighter than generic charts: 2-row legend + axis labels need less band than structuredLegendChartBottom alone. */
+    const tightLegendReserve =
+      rowCount >= 2 ? Math.max(22, legendBottom - 12) : Math.max(18, legendBottom - 4);
+    return {
+      top: 12,
+      right: 8,
+      bottom: tightLegendReserve + NARROW_AXIS_LEGEND_GAP,
+      left: 14,
+    };
+  }, [narrowLayout, legendBottom, legendRows]);
+
+  const yAxisWidth = narrowLayout ? 34 : 56;
+  const tickFontSize = narrowLayout ? 10 : 12;
+  const axisLabelFontSize = narrowLayout ? 10 : 11;
+  /** Keeps the rotated y-axis title inside the SVG; small offset toward the axis. */
+  const yLabelOffset = narrowLayout ? 2 : 6;
+  /** Nudge rotated y-axis title slightly upward along the chart. */
+  const yLabelDy = narrowLayout ? -10 : -6;
+  /** Negative offset moves the bottom x-axis title slightly up (toward the plot). */
+  const xLabelOffset = narrowLayout ? -5 : 4;
+
   const fitLine = useMemo(() => {
     if (intercept == null || slope == null || !Number.isFinite(intercept) || !Number.isFinite(slope)) {
       return [];
@@ -327,9 +393,9 @@ export function ElasticityChart({
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.chartArea}>
+      <div className={`${styles.chartArea} ${narrowLayout ? styles.chartAreaNarrow : ''}`.trim()}>
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={{ top: 34, right: 16, bottom: 10, left: 44 }}>
+          <ScatterChart margin={chartMargin}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
             <XAxis
               type="number"
@@ -338,13 +404,15 @@ export function ElasticityChart({
               domain={xDomain}
               tickFormatter={(v) => `${formatDecimal(v, 0)}%`}
               stroke="var(--color-secondary-text)"
-              fontSize={12}
+              tick={{ fontSize: tickFontSize, fill: 'var(--color-secondary-text)' }}
+              minTickGap={narrowLayout ? 12 : undefined}
               label={{
                 value: 'Δ Expenses vs prior month (%)',
                 position: 'bottom',
-                offset: 6,
+                offset: xLabelOffset,
+                dy: narrowLayout ? -4 : -2,
                 fill: 'var(--color-secondary-text)',
-                fontSize: 11,
+                fontSize: axisLabelFontSize,
               }}
             />
             <YAxis
@@ -354,15 +422,21 @@ export function ElasticityChart({
               domain={yDomain}
               tickFormatter={(v) => `${formatDecimal(v, 0)}%`}
               stroke="var(--color-secondary-text)"
-              fontSize={12}
-              width={56}
+              tick={{
+                fontSize: tickFontSize,
+                fill: 'var(--color-secondary-text)',
+                dx: narrowLayout ? -2 : 0,
+              }}
+              tickMargin={narrowLayout ? 1 : 8}
+              width={yAxisWidth}
               label={{
                 value: 'Δ Revenue vs prior month (%)',
                 angle: -90,
                 position: 'left',
-                offset: 6,
+                offset: yLabelOffset,
+                dy: yLabelDy,
                 fill: 'var(--color-secondary-text)',
-                fontSize: 11,
+                fontSize: axisLabelFontSize,
                 style: { textAnchor: 'middle', dominantBaseline: 'central' },
               }}
             />
@@ -390,7 +464,7 @@ export function ElasticityChart({
                 line={{ stroke: chartLinearTrendStroke, strokeWidth: 2.5 }}
                 lineType="joint"
                 shape={() => null}
-                legendType="plainline"
+                legendType="line"
                 isAnimationActive={false}
                 hide={legendHidden.has('fit')}
               />
@@ -410,19 +484,23 @@ export function ElasticityChart({
               verticalAlign="bottom"
               align="center"
               wrapperStyle={{
+                ...structuredLegendWrapperStyle,
                 fontSize: 12,
-                paddingTop: 28,
-                paddingBottom: 0,
-                cursor: 'pointer',
+                paddingTop: narrowLayout ? 2 : 12,
               }}
-              onClick={onElasticityLegendClick}
-              formatter={(value) => {
-                const key =
-                  value === MONTHS_LEGEND ? 'months' : value === FIT_LEGEND ? 'fit' : value === PROJECTED_LEGEND ? 'projected' : null;
-                return (
-                  <span style={{ opacity: key && legendHidden.has(key) ? 0.45 : 1 }}>{value}</span>
-                );
-              }}
+              content={(lp) => (
+                <StructuredChartLegend
+                  payload={lp.payload}
+                  hidden={legendHidden}
+                  dimPairs={[]}
+                  isDimmed={(h, k) => !!k && h.has(k)}
+                  onItemClick={onElasticityLegendClick}
+                  rows={legendRows}
+                  resolveEntryKey={elasticityLegendKey}
+                  shortLabels={ELASTICITY_LEGEND_SHORT_LABELS}
+                  dashedKeys={new Set(['projected'])}
+                />
+              )}
             />
           </ScatterChart>
         </ResponsiveContainer>

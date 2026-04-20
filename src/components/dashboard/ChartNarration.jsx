@@ -116,14 +116,16 @@ export function ChartNarration({ summary, chartData, startDate, endDate }) {
         )}
 
         {!loading && !error && !narration && (
-          <button
-            type="button"
-            onClick={handleExplain}
-            disabled={loading}
-            className={settingsStyles.actionBtn}
-          >
-            Generate chart summary
-          </button>
+          <div className={styles.narrateOutlineBtnWrap}>
+            <button
+              type="button"
+              onClick={handleExplain}
+              disabled={loading}
+              className={`${styles.forecastDownloadBtn} ${styles.forecastDownloadBtnSubtle}`}
+            >
+              Generate chart summary
+            </button>
+          </div>
         )}
 
         {!loading && !error && narration && (

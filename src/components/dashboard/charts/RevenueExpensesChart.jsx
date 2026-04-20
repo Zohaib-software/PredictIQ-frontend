@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -14,9 +15,13 @@ import { useReducedMotionSetting } from '../../../context/ReducedMotionContext';
 import { useLegendToggleGroups } from '../../../hooks/useLegendToggleGroups';
 import {
   filterTooltipPayloadPreferActualOverProjection,
-  legendEntryDimmed,
   projectedLineHidden,
 } from '../../../utils/chartLegendVisibility';
+import {
+  StructuredChartLegend,
+  structuredLegendChartBottom,
+  structuredLegendWrapperStyle,
+} from '../StructuredChartLegend';
 import { chartColors, chartProjectionStroke } from '../../../theme';
 import { paddedNumericDomain } from '../../../utils/chartAxisDomain';
 import { formatChartAxisGBP, formatGbp } from '../../../utils/displayFormat';
@@ -34,9 +39,14 @@ const REV_EXP_ACTUAL_PROJ_PAIRS = [
   { actual: 'expenses', projected: 'expProj' },
 ];
 
+const REV_EXP_LEGEND_SHORT_LABELS = {
+  revProj: 'Rev. (proj.)',
+  expProj: 'Exp. (proj.)',
+};
+
 /**
  * @param {{ labels: string[], revenue?: number[], expenses?: number[] }} data
- * @param {'daily'|'weekly'|'monthly'|'yearly'} periodType — bucket style for projection x-axis labels
+ * @param {'daily'|'weekly'|'monthly'|'yearly'} periodType - bucket style for projection x-axis labels
  */
 export function RevenueExpensesChart({ data, projectionMonths = 1, periodType = 'monthly' }) {
   const { reducedMotionEnabled } = useReducedMotionSetting();
@@ -95,13 +105,26 @@ export function RevenueExpensesChart({ data, projectionMonths = 1, periodType = 
   const manyPoints = chartRows.length > 20;
   const dotProps = manyPoints ? false : { r: 3 };
   const showProj = projectionActive && baseRows.length >= 2;
-  const lineAnim = !reducedMotionEnabled && chartRows.length <= 60;
+  /** Recharts line animation: cap was 60 points, which hid anim for ~5y monthly data; keep a higher cap for UX */
+  const lineAnim = !reducedMotionEnabled && chartRows.length <= 144;
+
+  const legendRows = useMemo(
+    () =>
+      showProj ?
+        [
+          ['revenue', 'expenses'],
+          ['revProj', 'expProj'],
+        ]
+      : [['revenue', 'expenses']],
+    [showProj]
+  );
+  const legendBottom = useMemo(() => structuredLegendChartBottom(legendRows), [legendRows]);
 
   return (
     <ResponsiveContainer width="100%" height={320}>
       <LineChart
         data={chartRows}
-        margin={{ top: 10, right: 12, left: 4, bottom: 12 }}
+        margin={{ top: 10, right: 12, left: 4, bottom: legendBottom }}
       >
         <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
         <XAxis
@@ -146,21 +169,22 @@ export function RevenueExpensesChart({ data, projectionMonths = 1, periodType = 
           }}
         />
         <Legend
-          wrapperStyle={{ cursor: 'pointer' }}
-          onClick={onLegendClick}
-          formatter={(value, entry) => (
-            <span
-              style={{
-                opacity: legendEntryDimmed(hidden, entry.dataKey, REV_EXP_ACTUAL_PROJ_PAIRS)
-                  ? 0.45
-                  : 1,
-              }}
-            >
-              {value}
-            </span>
+          verticalAlign="bottom"
+          align="center"
+          wrapperStyle={structuredLegendWrapperStyle}
+          content={(lp) => (
+            <StructuredChartLegend
+              payload={lp.payload}
+              hidden={hidden}
+              dimPairs={REV_EXP_ACTUAL_PROJ_PAIRS}
+              onItemClick={onLegendClick}
+              rows={legendRows}
+              shortLabels={REV_EXP_LEGEND_SHORT_LABELS}
+            />
           )}
         />
         <Line
+          key={`rev-${!hidden.has('revenue')}`}
           type="monotone"
           dataKey="revenue"
           name="Revenue"
@@ -169,10 +193,12 @@ export function RevenueExpensesChart({ data, projectionMonths = 1, periodType = 
           dot={dotProps}
           activeDot={{ r: 5 }}
           isAnimationActive={lineAnim}
+          animationDuration={lineAnim ? 600 : 0}
           connectNulls={false}
           hide={hidden.has('revenue')}
         />
         <Line
+          key={`exp-${!hidden.has('expenses')}`}
           type="monotone"
           dataKey="expenses"
           name="Expenses"
@@ -181,12 +207,14 @@ export function RevenueExpensesChart({ data, projectionMonths = 1, periodType = 
           dot={dotProps}
           activeDot={{ r: 5 }}
           isAnimationActive={lineAnim}
+          animationDuration={lineAnim ? 600 : 0}
           connectNulls={false}
           hide={hidden.has('expenses')}
         />
         {showProj && (
           <>
             <Line
+              key={`revp-${!projectedLineHidden(hidden, 'revenue', 'revProj')}`}
               type="monotone"
               dataKey="revProj"
               name="Revenue (projected)"
@@ -196,9 +224,11 @@ export function RevenueExpensesChart({ data, projectionMonths = 1, periodType = 
               dot={false}
               connectNulls
               isAnimationActive={lineAnim}
+              animationDuration={lineAnim ? 600 : 0}
               hide={projectedLineHidden(hidden, 'revenue', 'revProj')}
             />
             <Line
+              key={`expp-${!projectedLineHidden(hidden, 'expenses', 'expProj')}`}
               type="monotone"
               dataKey="expProj"
               name="Expenses (projected)"
@@ -208,6 +238,7 @@ export function RevenueExpensesChart({ data, projectionMonths = 1, periodType = 
               dot={false}
               connectNulls
               isAnimationActive={lineAnim}
+              animationDuration={lineAnim ? 600 : 0}
               hide={projectedLineHidden(hidden, 'expenses', 'expProj')}
             />
           </>

@@ -21,7 +21,7 @@ export function ReducedMotionProvider({ children }) {
     if (!el) return;
     /*
      * Apply on `#root`, not `documentElement` or `body`: Theme mutates <html> inline styles;
-     * `body` uses overflow:hidden — toggling attributes there correlated with Chromium paint bugs.
+     * `body` uses overflow:hidden; toggling attributes there correlated with Chromium paint bugs.
      * Scoped tokens still inherit to the whole app subtree under #root.
      */
     if (reducedMotionEnabled) {

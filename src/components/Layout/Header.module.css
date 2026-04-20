@@ -64,6 +64,21 @@
   color: var(--color-accent);
 }
 
+@media (max-width: 768px) {
+  .dashboardLink {
+    display: none;
+  }
+
+  .userName {
+    display: none;
+  }
+
+  /* Hero already has Log in; keep header to logo + Get started on narrow viewports. */
+  .publicLoginLink {
+    display: none;
+  }
+}
+
 .userName {
   font-size: 0.9rem;
   color: var(--color-secondary-text);
@@ -79,8 +94,5 @@
   }
   .logo {
     font-size: 1.25rem;
-  }
-  .userName {
-    max-width: 100px;
   }
 }

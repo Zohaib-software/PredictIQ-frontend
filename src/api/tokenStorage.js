@@ -1,4 +1,4 @@
-/** Access JWT (short-lived) — same key as before for compatibility. */
+/** Access JWT (short-lived); same key as before for compatibility. */
 export const ACCESS_TOKEN_KEY = 'predictiq_token';
 /** Refresh JWT (long-lived), rotated on each refresh. */
 export const REFRESH_TOKEN_KEY = 'predictiq_refresh_token';

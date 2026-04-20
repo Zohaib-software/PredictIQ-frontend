@@ -77,7 +77,7 @@ export function RegisterPage() {
         form.phoneNumber.trim() || undefined,
         form.password
       );
-      navigate('/', { replace: true });
+      navigate('/overview', { replace: true });
     } catch (err) {
       setApiError(err.message || 'Registration failed');
       if (err.errors?.length) {
@@ -92,7 +92,7 @@ export function RegisterPage() {
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.card}>
+      <div className={`${styles.card} ${styles.registerCard}`}>
         <button
           type="button"
           className={styles.backButton}

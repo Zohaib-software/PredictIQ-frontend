@@ -46,6 +46,8 @@ export function ForecastSummaryWidget({
   forecast90 = 0,
   baselineCashFlow = null,
   recentCashFlows = [],
+  /** When `kpiList`, mobile/small screens use the same flat list treatment as overview KPI rows. */
+  layout = 'grid',
 }) {
   const fmt = (v) => formatGbpCompact(v ?? 0);
   const derivedBaseline =
@@ -58,8 +60,11 @@ export function ForecastSummaryWidget({
     if (tone === 'positive') return `${styles.forecastValue} ${styles.forecastPositive}`;
     return `${styles.forecastValue} ${styles.forecastAmber}`;
   };
+  const gridClassName =
+    layout === 'kpiList' ? `${styles.forecastGrid} ${styles.forecastGridKpiList}` : styles.forecastGrid;
+
   return (
-    <div className={styles.forecastGrid}>
+    <div className={gridClassName}>
       <div className={styles.forecastItem}>
         <span className={styles.forecastLabel}>30-Day Forecast</span>
         <span className={rowClass(forecast30)} title={formatGbpFull(forecast30)}>

@@ -104,6 +104,18 @@
   display: none;
 }
 
+/* Collapsed strip (desktop): center icons — was inherited from DashboardLayout `sidebarClosed` on aside. */
+@media (min-width: 1025px) {
+  .sidebarClosed .sidebarNav a {
+    justify-content: center;
+  }
+
+  .sidebarClosed .sidebarFooter a,
+  .sidebarClosed .sidebarFooter button {
+    justify-content: center;
+  }
+}
+
 .sidebarFooter {
   padding: 1rem 0.75rem;
   border-top: 1px solid var(--color-border-light);
@@ -143,11 +155,7 @@
 .panelHeader {
   padding: 0.9rem 1rem;
   border-bottom: 1px solid var(--color-border-light);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02) 0%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background: color-mix(in srgb, var(--color-accent) 50%, transparent);
 }
 
 .panelTitle {
@@ -179,6 +187,10 @@
   margin-bottom: 0.65rem;
 }
 
+.sectionHeader > div:first-child {
+  min-width: 0;
+}
+
 .section {
   background: transparent;
   border: 1px solid var(--color-border-light);
@@ -196,6 +208,36 @@
   margin-top: 1.25rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--color-border-light);
+}
+
+/* Stacked settings areas inside one panel: dividers only, no nested bordered cards. */
+.settingsStackBody {
+  gap: 0;
+}
+
+.settingsSubsection {
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.settingsSubsection + .settingsSubsection {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-border-light);
+}
+
+/* Vertical stack inside a subsection when not using a bordered .controlList */
+.flatControls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.inlineSubsectionFeedback {
+  margin-bottom: 0.75rem;
 }
 
 .sectionTitle {
@@ -378,6 +420,13 @@
 .passwordActions {
   display: flex;
   justify-content: flex-start;
+}
+
+/* Per-session logout — same red destructive as upload delete (`pq-btn-danger-red` in index.css). */
+.sessionLogoutBtn {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.55rem 0.9rem;
 }
 
 .securityActions {
@@ -800,6 +849,13 @@
   color: var(--color-primary-text);
 }
 
+/* 2FA Enabled / Not enabled — keep on one line next to the heading (narrow flex row). */
+.badgeStatus {
+  flex-shrink: 0;
+  white-space: nowrap;
+  align-self: center;
+}
+
 .stepBadge {
   background: var(--color-accent);
   border-color: var(--color-accent);
@@ -875,102 +931,295 @@
   justify-content: flex-end;
 }
 
-@media (max-width: 720px) {
-  .shell {
-    display: block;
-  }
-
-  .sidebar {
-    height: auto;
-    width: 100%;
-  }
-
-  .sidebarNav {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .navButtonReset {
-    width: auto;
-  }
-
-  .main {
-    padding: 1rem;
-  }
-
-  .infoGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .passwordGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .twoFactorGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .twoFactorSetupPanel {
-    grid-template-columns: 1fr;
-  }
-
-  .twoFactorSetupMedia {
-    width: 100%;
-    max-width: 220px;
-  }
-
-  .twoFactorSetupBody {
-    border-left: none;
-    padding-left: 0;
-  }
-
-  .twoFactorSetupStep1Row {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .twoFactorQr {
-    width: 100%;
-    max-width: 220px;
-  }
-
-  .backupCodesGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .passwordGrid > :last-child {
-    grid-column: auto;
-  }
-
-  .controlRow {
-    grid-template-columns: 1fr;
-    align-items: start;
-  }
-
-  .controlCta {
-    justify-content: flex-start;
-  }
-
-  .settingRow {
-    grid-template-columns: 1fr;
-    align-items: start;
-  }
-
-  .sessionCard {
-    grid-template-columns: 1fr;
-  }
-
+@media (max-width: 768px) {
   .sessionActions {
-    justify-content: flex-start;
+    justify-content: center;
+    width: 100%;
   }
 
-  .sidebarToggle {
-    display: none;
+  .sessionLogoutBtn {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 }
 
 /* Settings shell: sidebar width is on `aside` (global rule in index.css); toggle is a button. */
 :global(#root[data-reduced-motion='true']) .sidebarToggle {
   transition: none;
+}
+
+.drawerOverlay {
+  display: none;
+}
+
+/*
+ * Narrow-only (JS `narrowLayout`): leading menu + title block — same row as Material top app bar / iOS nav.
+ */
+.mobileTopBar {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  width: 100%;
+  flex-shrink: 0;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.35rem;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.mobileTopBarCopy {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobileTopBarTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--color-primary-text);
+}
+
+.mobileTopBarSubtitle {
+  margin: 0.28rem 0 0;
+  font-size: 0.84rem;
+  line-height: 1.42;
+  color: var(--color-secondary-text);
+}
+
+.mobilePanelSectionTitle {
+  margin: 0 0 0.7rem;
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--color-primary-text);
+}
+
+/*
+ * Mobile / tablet (≤1024px): slide-over drawer from the left — same pattern as the main app nav.
+ * Laptop (≥1025px): rules above keep drawer UI out of the layout; sidebar stays the left column.
+ */
+@media (max-width: 1024px) {
+  /*
+   * Settings routes render outside DashboardLayout (`App.jsx`), while `#root` uses `overflow: hidden`.
+   * Use a viewport-tall flex column and scroll inside `.main` — same idea as the desktop shell, otherwise
+   * tall content is clipped with no scroll ancestor (broken touch scroll on phones).
+   */
+  .shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Only mounted when the drawer is open — avoids an invisible fixed layer blocking touch scroll. */
+  .drawerOverlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 44;
+    background: rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 45;
+    height: 100dvh;
+    max-height: none;
+    width: min(280px, 86vw) !important;
+    flex: none;
+    border-right: 1px solid var(--color-border-light);
+    border-bottom: none;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
+    transition: transform var(--transition-base);
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+    width: min(280px, 86vw) !important;
+  }
+
+  .sidebarClosed {
+    transform: translateX(-100%);
+    width: min(280px, 86vw) !important;
+  }
+
+  .sidebarClosed .navText {
+    display: inline;
+  }
+
+  .sidebarHead {
+    min-height: 52px;
+    padding: 0 0.75rem;
+  }
+
+  .sidebarBody {
+    padding: 0.75rem 0.65rem 0.85rem;
+  }
+
+  .sidebarNav {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+
+  .sidebarFooter {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.75rem 0.65rem;
+  }
+
+  /* Full-bleed stack: no nested card chrome (title + menu live in `.mobileTopBar` in JSX). */
+  .panel {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .panel + .panel {
+    margin-top: 1.35rem;
+  }
+
+  .mobileDrawerOpenBtn {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm);
+    background: var(--color-card-bg);
+    color: var(--color-primary-text);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  .mobileDrawerOpenBtn:hover {
+    border-color: var(--color-accent);
+    background: rgba(55, 193, 165, 0.08);
+  }
+
+  .mobileDrawerOpenBtn:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .main {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+    padding: 1rem 0.875rem 1.35rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  .content {
+    max-width: none;
+    margin: 0;
+    width: 100%;
+    align-self: stretch;
+  }
+
+  .panelBody {
+    padding: 0.65rem 0 0.85rem;
+  }
+
+  .panelHeader {
+    padding: 0.8rem 0.9rem;
+  }
+
+  .section {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .controlRow,
+  .settingRow {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 0.75rem;
+  }
+
+  .controlRow > :last-child,
+  .settingRow > :last-child {
+    justify-self: start;
+  }
+
+  .passwordActions {
+    justify-content: center;
+  }
+
+  /* Logged-in devices: Refresh + Log out all — equal full-width stack (narrow settings). */
+  .sectionHeaderSessionTools {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sectionHeaderSessionTools .securityActions {
+    flex-direction: column;
+    width: 100%;
+    align-self: stretch;
+  }
+
+  .sectionHeaderSessionTools .securityActions .actionBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Data & uploads — Export row: center Download under the copy block. */
+  .controlRowExportDownload .controlCta {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+@media (min-width: 1025px) {
+  .drawerOverlay {
+    display: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .main {
+    padding: 0.75rem 0.65rem 1.1rem;
+  }
+
+  .panelHeader {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .panelBody {
+    padding: 0.55rem 0 0.75rem;
+  }
+
+  .section {
+    padding: 0.65rem 0.7rem;
+  }
 }

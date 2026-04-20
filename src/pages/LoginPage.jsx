@@ -114,7 +114,7 @@ export function LoginPage() {
     try {
       if (isTwoFactorStep) {
         await verifyTwoFactorLogin(twoFactorChallenge.twoFactorToken, twoFactorForm.code.trim());
-        navigate('/', { replace: true });
+        navigate('/overview', { replace: true });
         return;
       }
 
@@ -131,7 +131,7 @@ export function LoginPage() {
         return;
       }
 
-      navigate('/', { replace: true });
+      navigate('/overview', { replace: true });
     } catch (err) {
       setApiError(err.message || 'Login failed');
       if (err.errors?.length) {
@@ -182,7 +182,7 @@ export function LoginPage() {
     setSubmitting(true);
     try {
       await completePasswordReset2fa(reset2faVerificationToken, resetForm.newPassword);
-      navigate('/', { replace: true });
+      navigate('/overview', { replace: true });
     } catch (err) {
       setApiError(err.message || 'Password reset failed');
       if (err.errors?.length) {

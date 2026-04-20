@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -13,9 +14,13 @@ import { useLegendToggleGroups } from '../../../hooks/useLegendToggleGroups';
 import { useReducedMotionSetting } from '../../../context/ReducedMotionContext';
 import {
   filterTooltipPayloadPreferActualOverProjection,
-  legendEntryDimmed,
   projectedLineHidden,
 } from '../../../utils/chartLegendVisibility';
+import {
+  StructuredChartLegend,
+  structuredLegendChartBottom,
+  structuredLegendWrapperStyle,
+} from '../StructuredChartLegend';
 import { chartColors, chartProjectionStroke } from '../../../theme';
 import { paddedNumericDomain } from '../../../utils/chartAxisDomain';
 import { formatChartAxisGBP, formatGbp } from '../../../utils/displayFormat';
@@ -31,6 +36,11 @@ const AD_REV_ACTUAL_PROJ_PAIRS = [
   { actual: 'ad_spend', projected: 'adProj' },
   { actual: 'total_revenue', projected: 'revProj' },
 ];
+
+const AD_REV_LEGEND_SHORT_LABELS = {
+  adProj: 'Ad (proj.)',
+  revProj: 'Rev. (proj.)',
+};
 
 /**
  * @param {{
@@ -52,9 +62,21 @@ export function AdSpendRevenueChart({ chartRows, showProjectedSeries = false }) 
     chartRows.map((r) => r.revProj).filter((v) => v != null),
   ]);
 
+  const legendRows = useMemo(
+    () =>
+      showProjectedSeries ?
+        [
+          ['ad_spend', 'total_revenue'],
+          ['adProj', 'revProj'],
+        ]
+      : [['ad_spend', 'total_revenue']],
+    [showProjectedSeries]
+  );
+  const legendBottom = useMemo(() => structuredLegendChartBottom(legendRows), [legendRows]);
+
   return (
     <ResponsiveContainer width="100%" height={320}>
-      <LineChart data={chartRows} margin={{ top: 10, right: 12, left: 4, bottom: 12 }}>
+      <LineChart data={chartRows} margin={{ top: 10, right: 12, left: 4, bottom: legendBottom }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
         <XAxis
           dataKey="period"
@@ -97,18 +119,18 @@ export function AdSpendRevenueChart({ chartRows, showProjectedSeries = false }) 
           }}
         />
         <Legend
-          wrapperStyle={{ cursor: 'pointer' }}
-          onClick={onLegendClick}
-          formatter={(value, entry) => (
-            <span
-              style={{
-                opacity: legendEntryDimmed(hidden, entry.dataKey, AD_REV_ACTUAL_PROJ_PAIRS)
-                  ? 0.45
-                  : 1,
-              }}
-            >
-              {value}
-            </span>
+          verticalAlign="bottom"
+          align="center"
+          wrapperStyle={structuredLegendWrapperStyle}
+          content={(lp) => (
+            <StructuredChartLegend
+              payload={lp.payload}
+              hidden={hidden}
+              dimPairs={AD_REV_ACTUAL_PROJ_PAIRS}
+              onItemClick={onLegendClick}
+              rows={legendRows}
+              shortLabels={AD_REV_LEGEND_SHORT_LABELS}
+            />
           )}
         />
         <Line

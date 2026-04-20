@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   CartesianGrid,
   DefaultTooltipContent,
@@ -13,7 +13,13 @@ import {
 import { useLegendToggleGroups } from '../../../hooks/useLegendToggleGroups';
 import { useReducedMotionSetting } from '../../../context/ReducedMotionContext';
 import { filterTooltipPayloadPreferActualOverProjection } from '../../../utils/chartLegendVisibility';
-import { formatChartAxisGBP, formatGbp } from '../../../utils/displayFormat';
+import {
+  StructuredChartLegend,
+  structuredLegendChartBottom,
+  structuredLegendWrapperStyle,
+} from '../StructuredChartLegend';
+import { formatChartAxisGBP, formatChartAxisGBPNarrow, formatGbp } from '../../../utils/displayFormat';
+import { paddedNumericDomain } from '../../../utils/chartAxisDomain';
 
 const FORECAST_VS_HISTORICAL_LEGEND_GROUPS = {
   historicalCashFlow: ['historicalCashFlow'],
@@ -24,6 +30,11 @@ const FORECAST_VS_HIST_ACTUAL_PROJ_PAIRS = [
   { actual: 'historicalCashFlow', projected: 'predictedCashFlow' },
 ];
 
+const FORECAST_LEGEND_SHORT_LABELS = {
+  historicalCashFlow: 'Historical',
+  predictedCashFlow: 'Predicted',
+};
+
 /**
  * @param {{
  *   chartRows: Array<{ period: string, historicalCashFlow?: number | null, predictedCashFlow?: number | null }>,
@@ -32,6 +43,20 @@ const FORECAST_VS_HIST_ACTUAL_PROJ_PAIRS = [
 export function ForecastVsHistoricalChart({ chartRows }) {
   const { reducedMotionEnabled } = useReducedMotionSetting();
   const lineAnim = !reducedMotionEnabled;
+  const [narrowChartLayout, setNarrowChartLayout] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      setNarrowChartLayout(false);
+      return undefined;
+    }
+    const mq = window.matchMedia('(max-width: 768px)');
+    const apply = () => setNarrowChartLayout(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+
   const hasPredictedInView = useMemo(
     () =>
       (chartRows ?? []).some(
@@ -42,12 +67,59 @@ export function ForecastVsHistoricalChart({ chartRows }) {
 
   const { hidden, onLegendClick } = useLegendToggleGroups(FORECAST_VS_HISTORICAL_LEGEND_GROUPS);
 
+  const legendRows = useMemo(
+    () =>
+      hasPredictedInView ?
+        [['historicalCashFlow'], ['predictedCashFlow']]
+      : [['historicalCashFlow']],
+    [hasPredictedInView]
+  );
+  const legendBottom = useMemo(() => structuredLegendChartBottom(legendRows), [legendRows]);
+
+  const chartYDomain = useMemo(() => {
+    const rows = chartRows ?? [];
+    if (!rows.length) return ['auto', 'auto'];
+    return paddedNumericDomain([
+      rows.map((r) => r.historicalCashFlow),
+      rows.map((r) => r.predictedCashFlow),
+    ]);
+  }, [chartRows]);
+
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={chartRows} margin={{ top: 26, right: 16, left: 4, bottom: 12 }}>
+      <LineChart
+        data={chartRows}
+        margin={{
+          top: 12,
+          right: narrowChartLayout ? 8 : 14,
+          left: narrowChartLayout ? 2 : 6,
+          bottom: legendBottom,
+        }}
+      >
         <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
-        <XAxis dataKey="period" stroke="var(--color-secondary-text)" />
-        <YAxis stroke="var(--color-secondary-text)" tickFormatter={formatChartAxisGBP} />
+        <XAxis
+          dataKey="period"
+          stroke="var(--color-secondary-text)"
+          tick={{
+            fontSize: narrowChartLayout ? 10 : 12,
+            fill: 'var(--color-secondary-text)',
+          }}
+          minTickGap={narrowChartLayout ? 16 : 28}
+          interval="preserveStartEnd"
+        />
+        <YAxis
+          stroke="var(--color-secondary-text)"
+          tick={{
+            fontSize: narrowChartLayout ? 10 : 13,
+            fill: 'var(--color-secondary-text)',
+            dx: narrowChartLayout ? -2 : 0,
+          }}
+          tickFormatter={narrowChartLayout ? formatChartAxisGBPNarrow : formatChartAxisGBP}
+          tickMargin={narrowChartLayout ? 1 : 8}
+          width={narrowChartLayout ? 34 : 58}
+          tickCount={narrowChartLayout ? 4 : undefined}
+          domain={chartYDomain}
+        />
         <Tooltip
           allowEscapeViewBox={{ x: false, y: false }}
           content={({ active, payload, label }) => {
@@ -60,8 +132,9 @@ export function ForecastVsHistoricalChart({ chartRows }) {
                   FORECAST_VS_HIST_ACTUAL_PROJ_PAIRS
                 )}
                 label={label}
+                labelFormatter={(l) => `Period: ${l}`}
                 formatter={(value, name) => [
-                  value != null ? formatGbp(Number(value)) : '—',
+                  value != null ? formatGbp(Number(value)) : '-',
                   name,
                 ]}
                 contentStyle={{
@@ -74,16 +147,18 @@ export function ForecastVsHistoricalChart({ chartRows }) {
           }}
         />
         <Legend
-          wrapperStyle={{ cursor: 'pointer' }}
-          onClick={onLegendClick}
-          formatter={(value, entry) => (
-            <span
-              style={{
-                opacity: hidden.has(String(entry.dataKey)) ? 0.45 : 1,
-              }}
-            >
-              {value}
-            </span>
+          verticalAlign="bottom"
+          align="center"
+          wrapperStyle={{ ...structuredLegendWrapperStyle, paddingTop: 0 }}
+          content={(lp) => (
+            <StructuredChartLegend
+              payload={lp.payload}
+              hidden={hidden}
+              dimPairs={FORECAST_VS_HIST_ACTUAL_PROJ_PAIRS}
+              onItemClick={onLegendClick}
+              rows={legendRows}
+              shortLabels={FORECAST_LEGEND_SHORT_LABELS}
+            />
           )}
         />
         <Line

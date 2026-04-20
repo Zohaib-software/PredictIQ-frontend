@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   LineChart,
   Line,
@@ -13,11 +13,12 @@ import {
 import { useFinancialRecords } from '../../../context/FinancialRecordsContext';
 import { useReducedMotionSetting } from '../../../context/ReducedMotionContext';
 import { useLegendToggleGroups } from '../../../hooks/useLegendToggleGroups';
+import { projectedLineHidden, tooltipDatumHasActualValue } from '../../../utils/chartLegendVisibility';
 import {
-  legendEntryDimmed,
-  projectedLineHidden,
-  tooltipDatumHasActualValue,
-} from '../../../utils/chartLegendVisibility';
+  StructuredChartLegend,
+  structuredLegendChartBottom,
+  structuredLegendWrapperStyle,
+} from '../StructuredChartLegend';
 import { chartColors, chartProjectionStroke } from '../../../theme';
 import { paddedNumericDomain } from '../../../utils/chartAxisDomain';
 import { formatChartAxisGBP, formatGbp } from '../../../utils/displayFormat';
@@ -40,11 +41,17 @@ const EXPENSE_ANOMALY_LEGEND_GROUPS = {
   total_expenses: ['total_expenses'],
   trend: ['trend'],
   expProj: ['expProj'],
-  /** Invisible series — toggles orange/green anomaly markers on the Total expenses line. */
+  /** Invisible series: toggles orange/green anomaly markers on the Total expenses line. */
   anomalyMarkers: ['anomalyMarkers'],
 };
 
 const EXPENSE_ANOMALY_ACTUAL_PROJ_PAIRS = [{ actual: 'total_expenses', projected: 'expProj' }];
+
+const EXPENSE_ANOMALY_LEGEND_SHORT_LABELS = {
+  expProj: 'Proj.',
+};
+
+const EXPENSE_ANOMALY_DASHED_SWATCH_KEYS = new Set(['trend', 'expProj']);
 
 /** Matches backend anomaly band styling (amber). */
 const THRESHOLD_LINE_STROKE = '#f59e0b';
@@ -110,8 +117,8 @@ function ExpenseTotalDot({ cx, cy, payload, highlightPeriod, onAnomalyClick, mar
         {payload?.recordId ? (
           <title>
             {verified ?
-              `Verified anomaly — ${payload.period} (click to edit)`
-            : `Explain anomaly — ${payload.period} (click)`}
+              `Verified anomaly: ${payload.period} (click to edit)`
+            : `Explain anomaly: ${payload.period} (click)`}
           </title>
         ) : null}
         {showPulseRing && (
@@ -149,7 +156,7 @@ const TOOLTIP_HOVER_GRACE_MS = 280;
 function ExpenseAnomalyTooltip({ active, payload, label }) {
   const [hoveringPanel, setHoveringPanel] = useState(false);
   const [stalePayload, setStalePayload] = useState(null);
-  /** Snapshot taken when pointer enters the tooltip — Recharts keeps changing payload as x moves. */
+  /** Snapshot taken when pointer enters the tooltip; Recharts keeps changing payload as x moves. */
   const [panelLockedPayload, setPanelLockedPayload] = useState(null);
 
   useEffect(() => {
@@ -348,10 +355,19 @@ export function ExpenseAnomalyChart({
     (v) => v != null && Number(v) > 0
   );
 
+  const legendRows = useMemo(
+    () =>
+      showProj ?
+        [['total_expenses', 'trend', 'anomalyMarkers'], ['expProj']]
+      : [['total_expenses', 'trend', 'anomalyMarkers']],
+    [showProj]
+  );
+  const legendBottom = useMemo(() => structuredLegendChartBottom(legendRows), [legendRows]);
+
   return (
     <>
       <ResponsiveContainer width="100%" height={320}>
-        <LineChart data={displayRows} margin={{ top: 10, right: 12, left: 4, bottom: 12 }}>
+        <LineChart data={displayRows} margin={{ top: 10, right: 12, left: 4, bottom: legendBottom }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
           <XAxis
             dataKey="period"
@@ -378,18 +394,19 @@ export function ExpenseAnomalyChart({
             content={(tipProps) => <ExpenseAnomalyTooltip {...tipProps} />}
           />
           <Legend
-            wrapperStyle={{ cursor: 'pointer' }}
-            onClick={onLegendClick}
-            formatter={(value, entry) => (
-              <span
-                style={{
-                  opacity: legendEntryDimmed(hidden, entry.dataKey, EXPENSE_ANOMALY_ACTUAL_PROJ_PAIRS)
-                    ? 0.45
-                    : 1,
-                }}
-              >
-                {value}
-              </span>
+            verticalAlign="bottom"
+            align="center"
+            wrapperStyle={structuredLegendWrapperStyle}
+            content={(lp) => (
+              <StructuredChartLegend
+                payload={lp.payload}
+                hidden={hidden}
+                dimPairs={EXPENSE_ANOMALY_ACTUAL_PROJ_PAIRS}
+                onItemClick={onLegendClick}
+                rows={legendRows}
+                shortLabels={EXPENSE_ANOMALY_LEGEND_SHORT_LABELS}
+                dashedKeys={EXPENSE_ANOMALY_DASHED_SWATCH_KEYS}
+              />
             )}
           />
           {displayRows.some((s) => s[UPPER_BAND_KEY] != null) && (

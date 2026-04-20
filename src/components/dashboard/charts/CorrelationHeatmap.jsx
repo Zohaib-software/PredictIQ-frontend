@@ -11,7 +11,7 @@ function getColor(r) {
   return chartColors[4];
 }
 
-export function CorrelationHeatmap({ data }) {
+export function CorrelationHeatmap({ data, intrinsicHeight = false }) {
   const labels = data?.labels ?? [];
   const matrix = data?.matrix ?? [];
   const displayLabels = useMemo(() => labels.map((l) => l.replace(/_/g, ' ')), [labels]);
@@ -22,13 +22,15 @@ export function CorrelationHeatmap({ data }) {
     <div
       style={{
         width: '100%',
-        height: '100%',
+        height: intrinsicHeight ? 'auto' : '100%',
         minHeight: 0,
+        flex: intrinsicHeight ? '0 1 auto' : undefined,
         overflowX: 'auto',
-        overflowY: 'auto',
+        overflowY: intrinsicHeight ? 'visible' : 'auto',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        boxSizing: 'border-box',
       }}
     >
       <table

@@ -12,6 +12,8 @@
   align-items: center;
   gap: 0;
   flex: 1;
+  padding: 0 5px;
+  box-sizing: border-box;
 }
 
 .segment {
@@ -71,7 +73,8 @@
 .funnelSummary {
   font-size: 0.76rem;
   color: var(--color-secondary-text);
-  padding: 0 0.25rem;
+  padding: 0 16px;
+  box-sizing: border-box;
   max-width: 42rem;
 }
 

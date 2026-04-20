@@ -13,7 +13,7 @@ export function HomePage() {
           Smarter financial decisions start here
         </h1>
         <p className={styles.subtitle}>
-          PredictIQ combines CRM with predictive financial insights—giving SMEs
+          PredictIQ combines CRM with predictive financial insights, giving SMEs
           clear visibility and data-driven forecasting for growth.
         </p>
         {isAuthenticated ? (

@@ -14,7 +14,7 @@ async function request(endpoint, options = {}) {
 }
 
 /**
- * POST /api/notifications/sync-expense-anomalies — align DB alerts with unverified chart anomalies.
+ * POST /api/notifications/sync-expense-anomalies: align DB alerts with unverified chart anomalies.
  * @returns {Promise<{ synced: boolean }>}
  */
 export async function syncExpenseAnomalyNotifications() {
@@ -25,7 +25,7 @@ export async function syncExpenseAnomalyNotifications() {
 }
 
 /**
- * POST /api/notifications/sync-two-factor-reminder — align enable-2FA reminder with account state.
+ * POST /api/notifications/sync-two-factor-reminder: align enable-2FA reminder with account state.
  * @returns {Promise<{ synced: boolean }>}
  */
 export async function syncTwoFactorReminderNotifications() {

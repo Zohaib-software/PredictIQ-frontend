@@ -138,3 +138,19 @@
   outline-offset: 2px;
   border-radius: 2px;
 }
+
+/* Register only — full-bleed form on small viewports (login / reset keep `.card`). */
+@media (max-width: 768px) {
+  .registerCard {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .registerCard:hover {
+    box-shadow: none;
+  }
+}

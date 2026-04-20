@@ -21,7 +21,7 @@ function projectedMonthIsoFromLast(lastPeriodLabel, monthsAhead) {
 /**
  * Whether any forward month from the last visible period would fall inside the filter
  * (inclusive month bounds using HTML date values). When no filter, projection UI is allowed.
- * Only reads `data.date` — works for expense anomaly, profit margin, etc.
+ * Only reads `data.date`; works for expense anomaly, profit margin, etc.
  */
 export function expenseAnomalyProjectionVisibleInDateRange(
   anomalyDisplayData,

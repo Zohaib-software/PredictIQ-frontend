@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { mergeNotificationPreferences } from '../../constants/notificationPreferences.js';
 import { Link, NavLink, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -28,7 +28,31 @@ import {
 import { ConfirmationModal } from '../../components/common/ConfirmationModal';
 import layoutStyles from '../../components/dashboard/DashboardLayout.module.css';
 import { TWO_FACTOR_SETTINGS_ANCHOR_ID } from '../../utils/securityReminderNotification';
+import { MOBILE_NAV_MEDIA, getInitialSidebarOpen } from '../../utils/sidebarViewport';
+import pageStyles from './DashboardPages.module.css';
 import styles from './SettingsPage.module.css';
+
+/** Plain class markers; responsive rules live under `settingsPageRoot` in DashboardPages.module.css */
+const SR = {
+  sidebar: 'settings-r-sidebar',
+  sidebarNav: 'settings-r-sidebar-nav',
+  navBtn: 'settings-r-nav-btn',
+  sidebarToggle: 'settings-r-sidebar-toggle',
+  main: 'settings-r-main',
+  infoGrid: 'settings-r-info-grid',
+  passwordGrid: 'settings-r-password-grid',
+  twoFactorSetupPanel: 'settings-r-two-factor-setup-panel',
+  twoFactorSetupMedia: 'settings-r-two-factor-setup-media',
+  twoFactorSetupBody: 'settings-r-two-factor-setup-body',
+  twoFactorSetupStep1Row: 'settings-r-two-factor-setup-step1-row',
+  twoFactorQr: 'settings-r-two-factor-qr',
+  backupCodesGrid: 'settings-r-backup-codes-grid',
+  controlRow: 'settings-r-control-row',
+  controlCta: 'settings-r-control-cta',
+  settingRow: 'settings-r-setting-row',
+  sessionCard: 'settings-r-session-card',
+  sessionActions: 'settings-r-session-actions',
+};
 
 const SETTINGS_SECTIONS = [
   { id: 'profile', label: 'Profile', icon: 'profile' },
@@ -38,6 +62,58 @@ const SETTINGS_SECTIONS = [
 ];
 
 const SETTINGS_DATA_SLUG = 'data-uploads';
+
+/** Wait at least this long and for `fetchSessions` before showing Logged-in devices (avoids a loading-line flash). */
+const SESSIONS_REVEAL_DELAY_MS = 360;
+/** Auto-dismiss transient settings toasts (embedded + global), aligned with prior error-only 2.5s behavior. */
+const SETTINGS_FEEDBACK_AUTO_DISMISS_MS = 2500;
+
+/** Copy for each primary settings panel (desktop card header + narrow top app bar). */
+const SETTINGS_PANEL_META = {
+  profile: {
+    headingId: 'profile-heading',
+    title: 'Profile',
+    subtitle: 'View your account details.',
+  },
+  security: {
+    headingId: 'security-heading',
+    title: 'Security',
+    subtitle: 'Manage sign-in sessions across your devices.',
+  },
+  data: {
+    headingId: 'data-heading',
+    title: 'Data & uploads',
+    subtitle: 'Manage consent, exports, and deletions.',
+  },
+};
+
+const NOTIFICATIONS_PANEL_META = {
+  headingId: 'notifications-heading',
+  title: 'Notifications',
+  subtitle:
+    'Control in-app alerts (bell menu and Notifications page). Grouped like notification channels on iOS and Android so you can turn off whole categories.',
+};
+
+const ACCESSIBILITY_PANEL_META = {
+  headingId: 'accessibility-heading',
+  title: 'Accessibility & appearance',
+  subtitle: 'Adjust how PredictIQ looks. Your choices are saved on this device.',
+};
+
+function subscribeToMatchMedia(query, onStoreChange) {
+  if (typeof window === 'undefined') return () => {};
+  const mq = window.matchMedia(query);
+  mq.addEventListener('change', onStoreChange);
+  return () => mq.removeEventListener('change', onStoreChange);
+}
+
+function useMatchMedia(query) {
+  return useSyncExternalStore(
+    (onStoreChange) => subscribeToMatchMedia(query, onStoreChange),
+    () => (typeof window !== 'undefined' ? window.matchMedia(query).matches : false),
+    () => false,
+  );
+}
 
 function settingsPathForSectionId(sectionId) {
   if (sectionId === 'notifications') return '/settings/general-settings';
@@ -140,6 +216,22 @@ export function SettingsPage() {
   const { section: sectionSlug } = useParams();
   const resolvedSectionId = sectionIdFromSettingsSlug(sectionSlug);
   const activeSection = resolvedSectionId ?? 'profile';
+  const narrowLayout = useMatchMedia(MOBILE_NAV_MEDIA);
+  const mobileTopBar = useMemo(() => {
+    if (activeSection === 'notifications') {
+      const nav = SETTINGS_SECTIONS.find((s) => s.id === 'notifications');
+      return {
+        headingId: 'settings-general-heading',
+        title: nav?.label ?? 'General settings',
+        subtitle: 'Notifications, theme, contrast, and motion.',
+      };
+    }
+    const meta = SETTINGS_PANEL_META[activeSection];
+    if (!meta) {
+      return { headingId: 'settings-heading', title: 'Settings', subtitle: '' };
+    }
+    return { headingId: meta.headingId, title: meta.title, subtitle: meta.subtitle };
+  }, [activeSection]);
   const { user, logout, updateUser } = useAuth();
   const { mode, setMode } = useTheme();
   const { reducedMotionEnabled, setReducedMotionEnabled } = useReducedMotionSetting();
@@ -151,7 +243,7 @@ export function SettingsPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [downloadLoading, setDownloadLoading] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(getInitialSidebarOpen);
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
     newPassword: '',
@@ -160,7 +252,10 @@ export function SettingsPage() {
   const [passwordErrors, setPasswordErrors] = useState({});
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [sessions, setSessions] = useState([]);
-  const [sessionsLoading, setSessionsLoading] = useState(false);
+  /** True only after min delay + fetch complete when opening Security (list stays hidden until then). */
+  const [sessionsDevicesReady, setSessionsDevicesReady] = useState(false);
+  /** Manual Refresh only; keeps the session list visible while refetching. */
+  const [sessionsRefreshing, setSessionsRefreshing] = useState(false);
   const [sessionActionKey, setSessionActionKey] = useState('');
   const [twoFactorSetup, setTwoFactorSetup] = useState(null);
   const [twoFactorCode, setTwoFactorCode] = useState('');
@@ -172,6 +267,7 @@ export function SettingsPage() {
   const isTwoFactorFeedback = feedback?.scope === 'security-2fa';
   const isExportFeedback = feedback?.scope === 'data-export';
   const isNotificationsFeedback = feedback?.scope === 'notifications';
+  const isSessionsFeedback = feedback?.scope === 'sessions-devices';
 
   const [notificationPrefsLoading, setNotificationPrefsLoading] = useState(false);
 
@@ -255,25 +351,61 @@ export function SettingsPage() {
     return null;
   }, [modalType]);
 
-  const loadSessions = useCallback(async () => {
-    setSessionsLoading(true);
+  const refreshSessions = useCallback(async () => {
+    setSessionsRefreshing(true);
     try {
       const nextSessions = await fetchSessions();
       setSessions(nextSessions);
     } catch (error) {
-      setFeedback({ type: 'error', message: error?.message || 'Failed to load active sessions.' });
+      setFeedback({
+        type: 'error',
+        scope: 'sessions-devices',
+        message: error?.message || 'Failed to load active sessions.',
+      });
     } finally {
-      setSessionsLoading(false);
+      setSessionsRefreshing(false);
     }
   }, []);
 
   useEffect(() => {
     if (activeSection !== 'security') {
+      setSessionsDevicesReady(false);
       return;
     }
 
-    loadSessions();
-  }, [activeSection, loadSessions]);
+    let cancelled = false;
+    setSessions([]);
+    setSessionsDevicesReady(false);
+
+    (async () => {
+      const minDelay = new Promise((resolve) => {
+        window.setTimeout(resolve, SESSIONS_REVEAL_DELAY_MS);
+      });
+      try {
+        const [, nextSessions] = await Promise.all([minDelay, fetchSessions()]);
+        if (!cancelled) {
+          setSessions(Array.isArray(nextSessions) ? nextSessions : []);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setFeedback({
+            type: 'error',
+            scope: 'sessions-devices',
+            message: error?.message || 'Failed to load active sessions.',
+          });
+          setSessions([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setSessionsDevicesReady(true);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSection]);
 
   useEffect(() => {
     if (activeSection !== 'security') return;
@@ -288,16 +420,23 @@ export function SettingsPage() {
   }, [activeSection, location.hash, location.pathname]);
 
   useEffect(() => {
-    if (feedback?.type !== 'error') {
+    if (!feedback) {
       return undefined;
     }
 
     const timeoutId = window.setTimeout(() => {
-      setFeedback((current) => (current?.type === 'error' ? null : current));
-    }, 2500);
+      setFeedback(null);
+    }, SETTINGS_FEEDBACK_AUTO_DISMISS_MS);
 
     return () => window.clearTimeout(timeoutId);
   }, [feedback]);
+
+  /** Narrow viewports: collapse settings nav strip when the section URL changes (matches dashboard drawer UX). */
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!window.matchMedia(MOBILE_NAV_MEDIA).matches) return;
+    setSidebarOpen(false);
+  }, [location.pathname, location.search]);
 
   if (sectionSlug === 'data-%26-uploads' || sectionSlug === 'data-&-uploads') {
     return <Navigate to={`/settings/${SETTINGS_DATA_SLUG}`} replace />;
@@ -491,7 +630,11 @@ export function SettingsPage() {
       await logout({ skipServer: true });
       navigate('/login', { replace: true });
     } catch (error) {
-      setFeedback({ type: 'error', message: error?.message || 'Failed to log out this session.' });
+      setFeedback({
+        type: 'error',
+        scope: 'sessions-devices',
+        message: error?.message || 'Failed to log out this session.',
+      });
     } finally {
       setSessionActionKey('');
     }
@@ -508,9 +651,17 @@ export function SettingsPage() {
     try {
       await logoutSessionApi(sessionId);
       setSessions((prev) => prev.filter((session) => session.id !== sessionId));
-      setFeedback({ type: 'success', message: 'That session has been logged out.' });
+      setFeedback({
+        type: 'success',
+        scope: 'sessions-devices',
+        message: 'That session has been logged out.',
+      });
     } catch (error) {
-      setFeedback({ type: 'error', message: error?.message || 'Failed to log out that session.' });
+      setFeedback({
+        type: 'error',
+        scope: 'sessions-devices',
+        message: error?.message || 'Failed to log out that session.',
+      });
     } finally {
       setSessionActionKey('');
     }
@@ -524,7 +675,11 @@ export function SettingsPage() {
       await logout({ skipServer: true });
       navigate('/login', { replace: true });
     } catch (error) {
-      setFeedback({ type: 'error', message: error?.message || 'Failed to log out all sessions.' });
+      setFeedback({
+        type: 'error',
+        scope: 'sessions-devices',
+        message: error?.message || 'Failed to log out all sessions.',
+      });
     } finally {
       setSessionActionKey('');
     }
@@ -728,11 +883,10 @@ export function SettingsPage() {
   };
 
   return (
-    <div className={styles.shell}>
+    <div className={`${styles.shell} ${pageStyles.settingsPageRoot}`}>
+      {/* Do not apply DashboardLayout `sidebarClosed` here; its mobile rules translate the aside off-screen. */}
       <aside
-        className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : styles.sidebarClosed} ${
-          sidebarOpen ? '' : layoutStyles.sidebarClosed
-        }`}
+        className={`${styles.sidebar} ${SR.sidebar} ${sidebarOpen ? styles.sidebarOpen : styles.sidebarClosed}`}
         aria-label="Settings sections"
       >
         <div className={styles.sidebarHead}>
@@ -741,7 +895,7 @@ export function SettingsPage() {
           </Link>
           <button
             type="button"
-            className={styles.sidebarToggle}
+            className={`${styles.sidebarToggle} ${SR.sidebarToggle}`}
             onClick={() => setSidebarOpen((o) => !o)}
             aria-expanded={sidebarOpen}
             aria-label={sidebarOpen ? 'Collapse settings sidebar' : 'Expand settings sidebar'}
@@ -751,13 +905,13 @@ export function SettingsPage() {
         </div>
 
         <div className={styles.sidebarBody}>
-          <nav className={styles.sidebarNav} aria-label="Account settings navigation">
+          <nav className={`${styles.sidebarNav} ${SR.sidebarNav}`} aria-label="Account settings navigation">
             {SETTINGS_SECTIONS.map((section) => (
               <NavLink
                 key={section.id}
                 to={settingsPathForSectionId(section.id)}
                 className={({ isActive }) =>
-                  `${styles.navButtonReset} ${layoutStyles.navLink} ${
+                  `${styles.navButtonReset} ${SR.navBtn} ${layoutStyles.navLink} ${
                     isActive ? layoutStyles.navLinkActive : ''
                   }`
                 }
@@ -819,9 +973,41 @@ export function SettingsPage() {
         </div>
       </aside>
 
-      <main id="main-content" className={styles.main}>
+      {sidebarOpen ? (
+        <div
+          className={styles.drawerOverlay}
+          aria-hidden={false}
+          onClick={() => setSidebarOpen(false)}
+        />
+      ) : null}
+
+      <div id="settings-page-main" role="main" className={`${styles.main} ${SR.main}`}>
+        {narrowLayout ? (
+          <div className={styles.mobileTopBar}>
+            <button
+              type="button"
+              className={styles.mobileDrawerOpenBtn}
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open settings sections menu"
+            >
+              <span aria-hidden="true">☰</span>
+            </button>
+            <div className={styles.mobileTopBarCopy}>
+              <h1 id={mobileTopBar.headingId} className={styles.mobileTopBarTitle}>
+                {mobileTopBar.title}
+              </h1>
+              {mobileTopBar.subtitle ? (
+                <p className={styles.mobileTopBarSubtitle}>{mobileTopBar.subtitle}</p>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
         <div className={styles.content}>
-          {feedback && !isTwoFactorFeedback && !isExportFeedback && (
+          {feedback &&
+            !isTwoFactorFeedback &&
+            !isExportFeedback &&
+            !isNotificationsFeedback &&
+            !isSessionsFeedback && (
             <div
               className={`${styles.feedback} ${
                 feedback.type === 'error' ? styles.feedbackError : styles.feedbackSuccess
@@ -834,17 +1020,19 @@ export function SettingsPage() {
 
           {activeSection === 'profile' && (
             <section className={styles.panel} aria-labelledby="profile-heading">
-              <header className={styles.panelHeader}>
-                <h2 id="profile-heading" className={styles.panelTitle}>
-                  Profile
-                </h2>
-                <p className={styles.panelSubtitle}>View your account details.</p>
-              </header>
+              {!narrowLayout && (
+                <header className={styles.panelHeader}>
+                  <h2 id="profile-heading" className={styles.panelTitle}>
+                    {SETTINGS_PANEL_META.profile.title}
+                  </h2>
+                  <p className={styles.panelSubtitle}>{SETTINGS_PANEL_META.profile.subtitle}</p>
+                </header>
+              )}
 
-              <div className={styles.panelBody}>
-                <div className={styles.section}>
+              <div className={`${styles.panelBody} ${styles.settingsStackBody}`}>
+                <div className={styles.settingsSubsection}>
                   <h3 className={styles.sectionTitle}>Account Information</h3>
-                  <div className={styles.infoGrid}>
+                  <div className={`${styles.infoGrid} ${SR.infoGrid}`}>
                     <div>
                       <p className={styles.infoLabel}>Name</p>
                       <p className={styles.infoValue}>{user?.businessName || 'Not available'}</p>
@@ -864,7 +1052,7 @@ export function SettingsPage() {
                   </div>
                 </div>
 
-                <div className={styles.section}>
+                <div className={styles.settingsSubsection}>
                   <div className={styles.sectionHeader}>
                     <div>
                       <h3 className={styles.sectionTitle}>Password & security</h3>
@@ -875,7 +1063,7 @@ export function SettingsPage() {
                   </div>
 
                   <form className={styles.passwordForm} onSubmit={handlePasswordSubmit}>
-                    <div className={styles.passwordGrid}>
+                    <div className={`${styles.passwordGrid} ${SR.passwordGrid}`}>
                       <Input
                         label="Current password"
                         type="password"
@@ -924,18 +1112,17 @@ export function SettingsPage() {
 
           {activeSection === 'security' && (
             <section className={styles.panel} aria-labelledby="security-heading">
-              <header className={styles.panelHeader}>
-                <h2 id="security-heading" className={styles.panelTitle}>
-                  Security
-                </h2>
-                <p className={styles.panelSubtitle}>Manage sign-in sessions across your devices.</p>
-              </header>
+              {!narrowLayout && (
+                <header className={styles.panelHeader}>
+                  <h2 id="security-heading" className={styles.panelTitle}>
+                    {SETTINGS_PANEL_META.security.title}
+                  </h2>
+                  <p className={styles.panelSubtitle}>{SETTINGS_PANEL_META.security.subtitle}</p>
+                </header>
+              )}
 
-              <div className={styles.panelBody}>
-                <div
-                  id={TWO_FACTOR_SETTINGS_ANCHOR_ID}
-                  className={`${styles.section} ${styles.sectionFlat}`}
-                >
+              <div className={`${styles.panelBody} ${styles.settingsStackBody}`}>
+                <div id={TWO_FACTOR_SETTINGS_ANCHOR_ID} className={styles.settingsSubsection}>
                   <div className={styles.sectionHeader}>
                     <div>
                       <h3 className={styles.sectionTitle}>Two-factor authentication</h3>
@@ -952,10 +1139,25 @@ export function SettingsPage() {
                         )}
                       </p>
                     </div>
-                    <span className={`${styles.badge} ${user?.twoFactorEnabled ? styles.badgeSuccess : ''}`}>
+                    <span
+                      className={`${styles.badge} ${styles.badgeStatus} ${
+                        user?.twoFactorEnabled ? styles.badgeSuccess : ''
+                      }`}
+                    >
                       {user?.twoFactorEnabled ? 'Enabled' : 'Not enabled'}
                     </span>
                   </div>
+
+                  {isTwoFactorFeedback && twoFactorSetupPhase !== 'setup' && (
+                    <div
+                      className={`${styles.feedback} ${
+                        feedback.type === 'error' ? styles.feedbackError : styles.feedbackSuccess
+                      } ${styles.inlineSubsectionFeedback}`}
+                      role="status"
+                    >
+                      {feedback.message}
+                    </div>
+                  )}
 
                   {!user?.twoFactorEnabled && twoFactorSetupPhase === 'idle' && (
                     <div className={styles.securityActions}>
@@ -971,7 +1173,7 @@ export function SettingsPage() {
                   )}
 
                   {twoFactorSetupPhase === 'setup' && twoFactorSetup && (
-                    <div className={styles.twoFactorSetupPanel}>
+                    <div className={`${styles.twoFactorSetupPanel} ${SR.twoFactorSetupPanel}`}>
                       {isTwoFactorFeedback && (
                         <div
                           className={`${styles.feedback} ${
@@ -982,17 +1184,17 @@ export function SettingsPage() {
                           {feedback.message}
                         </div>
                       )}
-                      <div className={styles.twoFactorSetupMedia}>
+                      <div className={`${styles.twoFactorSetupMedia} ${SR.twoFactorSetupMedia}`}>
                         <div className={styles.twoFactorStepHeaderRow}>
                           <span className={`${styles.badge} ${styles.stepBadge}`}>Step 1</span>
                           <span className={styles.twoFactorDash}>-</span>
                           <span className={styles.twoFactorStepTitle}>Set up authenticator</span>
                         </div>
-                          <div className={styles.twoFactorSetupStep1Row}>
+                          <div className={`${styles.twoFactorSetupStep1Row} ${SR.twoFactorSetupStep1Row}`}>
                             <img
                               src={twoFactorSetup.qrCodeDataUrl}
                               alt="QR code for authenticator app setup"
-                              className={styles.twoFactorQr}
+                              className={`${styles.twoFactorQr} ${SR.twoFactorQr}`}
                             />
                             <div className={styles.twoFactorSetupStep1Text}>
                               <p className={styles.sectionText}>
@@ -1008,7 +1210,7 @@ export function SettingsPage() {
                             </div>
                           </div>
                       </div>
-                      <div className={styles.twoFactorSetupBody}>
+                      <div className={`${styles.twoFactorSetupBody} ${SR.twoFactorSetupBody}`}>
                         <div className={styles.twoFactorStepHeaderRow}>
                           <span className={`${styles.badge} ${styles.stepBadge}`}>Step 2</span>
                           <span className={styles.twoFactorDash}>-</span>
@@ -1117,7 +1319,7 @@ export function SettingsPage() {
 
                       {backupCodes.length ? (
                         <>
-                          <div className={styles.backupCodesGrid}>
+                          <div className={`${styles.backupCodesGrid} ${SR.backupCodesGrid}`}>
                             {backupCodes.map((code) => (
                               <code key={code} className={styles.backupCode}>
                                 {code}
@@ -1150,7 +1352,7 @@ export function SettingsPage() {
                             Backup codes are shown only once. Regenerate them if you need a new set.
                           </p>
                         </div>
-                        <div className={styles.controlCta}>
+                        <div className={`${styles.controlCta} ${SR.controlCta}`}>
                           <button
                             type="button"
                             className={`${styles.actionBtn} ${styles.backupActionBtn}`}
@@ -1229,7 +1431,7 @@ export function SettingsPage() {
                               </button>
                             </div>
                           </div>
-                          <div className={styles.backupCodesGrid}>
+                          <div className={`${styles.backupCodesGrid} ${SR.backupCodesGrid}`}>
                             {backupCodes.map((code) => (
                               <code key={code} className={styles.backupCode}>
                                 {code}
@@ -1279,8 +1481,8 @@ export function SettingsPage() {
                   )}
                 </div>
 
-                <div className={`${styles.section} ${styles.sectionFlat}`}>
-                  <div className={styles.sectionHeader}>
+                <div className={styles.settingsSubsection} aria-busy={!sessionsDevicesReady}>
+                  <div className={`${styles.sectionHeader} ${styles.sectionHeaderSessionTools}`}>
                     <div>
                       <h3 className={styles.sectionTitle}>Logged-in devices</h3>
                       <p className={styles.sectionText}>
@@ -1291,28 +1493,44 @@ export function SettingsPage() {
                       <button
                         type="button"
                         className={styles.actionBtn}
-                        onClick={loadSessions}
-                        disabled={sessionsLoading || sessionActionKey === 'all'}
+                        onClick={refreshSessions}
+                        disabled={
+                          !sessionsDevicesReady || sessionsRefreshing || sessionActionKey === 'all'
+                        }
                       >
-                        {sessionsLoading ? 'Refreshing...' : 'Refresh'}
+                        {sessionsRefreshing ? 'Refreshing...' : 'Refresh'}
                       </button>
                       <button
                         type="button"
                         className={`${styles.actionBtn} ${styles.dangerBtn}`}
                         onClick={handleLogoutAllSessions}
-                        disabled={!sessions.length || sessionsLoading || sessionActionKey === 'all'}
+                        disabled={
+                          !sessions.length ||
+                          sessionsRefreshing ||
+                          !sessionsDevicesReady ||
+                          sessionActionKey === 'all'
+                        }
                       >
                         {sessionActionKey === 'all' ? 'Logging out...' : 'Log out all sessions'}
                       </button>
                     </div>
                   </div>
 
-                  {sessionsLoading ? (
-                    <p className={styles.sectionText}>Loading active sessions...</p>
-                  ) : sessions.length ? (
+                  {isSessionsFeedback && (
+                    <div
+                      className={`${styles.feedback} ${
+                        feedback.type === 'error' ? styles.feedbackError : styles.feedbackSuccess
+                      } ${styles.inlineSubsectionFeedback}`}
+                      role="status"
+                    >
+                      {feedback.message}
+                    </div>
+                  )}
+
+                  {!sessionsDevicesReady ? null : sessions.length ? (
                     <div className={styles.sessionList} role="list">
                       {sessions.map((session) => (
-                        <div key={session.id} className={styles.sessionCard} role="listitem">
+                        <div key={session.id} className={`${styles.sessionCard} ${SR.sessionCard}`} role="listitem">
                           <div className={styles.sessionInfo}>
                             <div className={styles.sessionHeaderRow}>
                               <h4 className={styles.sessionTitle}>{session.deviceLabel}</h4>
@@ -1326,10 +1544,10 @@ export function SettingsPage() {
                             </p>
                             <p className={styles.sessionAgent}>{session.userAgent || 'Unknown device'}</p>
                           </div>
-                          <div className={styles.sessionActions}>
+                          <div className={`${styles.sessionActions} ${SR.sessionActions}`}>
                             <button
                               type="button"
-                              className={`${styles.actionBtn} ${session.current ? '' : styles.dangerBtn}`}
+                              className={`pq-btn-danger-red ${styles.sessionLogoutBtn}`}
                               onClick={() => handleLogoutSingleSession(session.id, session.current)}
                               disabled={!!sessionActionKey}
                             >
@@ -1353,15 +1571,17 @@ export function SettingsPage() {
 
           {activeSection === 'data' && (
             <section className={styles.panel} aria-labelledby="data-heading">
-              <header className={styles.panelHeader}>
-                <h2 id="data-heading" className={styles.panelTitle}>
-                  Data & uploads
-                </h2>
-                <p className={styles.panelSubtitle}>Manage consent, exports, and deletions.</p>
-              </header>
+              {!narrowLayout && (
+                <header className={styles.panelHeader}>
+                  <h2 id="data-heading" className={styles.panelTitle}>
+                    {SETTINGS_PANEL_META.data.title}
+                  </h2>
+                  <p className={styles.panelSubtitle}>{SETTINGS_PANEL_META.data.subtitle}</p>
+                </header>
+              )}
 
-              <div className={styles.panelBody}>
-                <div className={styles.section}>
+              <div className={`${styles.panelBody} ${styles.settingsStackBody}`}>
+                <div className={styles.settingsSubsection}>
                   <h3 className={styles.sectionTitle}>Your Data & Privacy</h3>
                   <p className={styles.sectionText}>
                     PredictIQ stores your uploaded financial records and account details so it can
@@ -1390,37 +1610,40 @@ export function SettingsPage() {
                   )}
                 </div>
 
-                <div className={styles.controlList} role="list">
-                  {isExportFeedback && (
-                    <div
-                      className={`${styles.feedback} ${
-                        feedback.type === 'error' ? styles.feedbackError : styles.feedbackSuccess
-                      } ${styles.twoFactorEmbeddedFeedback}`}
-                      role="status"
-                    >
-                      {feedback.message}
-                    </div>
-                  )}
-                  <div className={styles.controlRow} role="listitem">
-                    <div className={styles.controlCopy}>
-                      <h3 className={styles.controlTitle}>Export data</h3>
-                      <p className={styles.controlText}>
-                        Download your profile, financial records, and notifications as a JSON file.
-                      </p>
-                    </div>
-                    <div className={styles.controlCta}>
-                      <button
-                        type="button"
-                        className={`${styles.actionBtn} ${styles.backupActionBtn}`}
-                        onClick={handleDownloadMyData}
-                        disabled={downloadLoading}
+                <div className={styles.settingsSubsection}>
+                  <div className={styles.flatControls}>
+                    {isExportFeedback && (
+                      <div
+                        className={`${styles.feedback} ${
+                          feedback.type === 'error' ? styles.feedbackError : styles.feedbackSuccess
+                        } ${styles.twoFactorEmbeddedFeedback}`}
+                        role="status"
                       >
-                        {downloadLoading ? 'Preparing…' : 'Download'}
-                      </button>
+                        {feedback.message}
+                      </div>
+                    )}
+                    <div className={`${styles.controlRow} ${styles.controlRowExportDownload} ${SR.controlRow}`}>
+                      <div className={styles.controlCopy}>
+                        <h3 className={styles.controlTitle}>Export data</h3>
+                        <p className={styles.controlText}>
+                          Download your profile, financial records, and notifications as a JSON file.
+                        </p>
+                      </div>
+                      <div className={`${styles.controlCta} ${SR.controlCta}`}>
+                        <button
+                          type="button"
+                          className={`${styles.actionBtn} ${styles.backupActionBtn}`}
+                          onClick={handleDownloadMyData}
+                          disabled={downloadLoading}
+                        >
+                          {downloadLoading ? 'Preparing…' : 'Download'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
 
+                <div className={styles.settingsSubsection}>
                 <div className={styles.dangerZone} aria-label="Danger zone">
                   <div className={styles.dangerZoneHeader}>
                     <h3 className={styles.dangerZoneTitle}>Danger zone</h3>
@@ -1430,7 +1653,7 @@ export function SettingsPage() {
                   </div>
 
                   <div className={styles.controlList} role="list">
-                    <div className={styles.controlRow} role="listitem">
+                    <div className={`${styles.controlRow} ${SR.controlRow}`} role="listitem">
                       <div className={styles.controlCopy}>
                         <h4 className={styles.controlTitle}>Delete uploaded data</h4>
                         <p className={styles.controlText}>
@@ -1438,7 +1661,7 @@ export function SettingsPage() {
                           stays active.
                         </p>
                       </div>
-                      <div className={styles.controlCta}>
+                      <div className={`${styles.controlCta} ${SR.controlCta}`}>
                         <button
                           type="button"
                           className={styles.actionBtn}
@@ -1449,7 +1672,7 @@ export function SettingsPage() {
                       </div>
                     </div>
 
-                    <div className={styles.controlRow} role="listitem">
+                    <div className={`${styles.controlRow} ${SR.controlRow}`} role="listitem">
                       <div className={styles.controlCopy}>
                         <h4 className={`${styles.controlTitle} ${styles.controlTitleDanger}`}>
                           Delete account
@@ -1458,7 +1681,7 @@ export function SettingsPage() {
                           Permanently deletes your account and everything tied to it.
                         </p>
                       </div>
-                      <div className={styles.controlCta}>
+                      <div className={`${styles.controlCta} ${SR.controlCta}`}>
                         <button
                           type="button"
                           className={`${styles.actionBtn} ${styles.dangerBtn}`}
@@ -1470,6 +1693,7 @@ export function SettingsPage() {
                     </div>
                   </div>
                 </div>
+                </div>
               </div>
             </section>
           )}
@@ -1477,67 +1701,79 @@ export function SettingsPage() {
           {activeSection === 'notifications' && (
             <>
               <section className={styles.panel} aria-labelledby="notifications-heading">
-                <header className={styles.panelHeader}>
-                  <h2 id="notifications-heading" className={styles.panelTitle}>
-                    Notifications
-                  </h2>
-                  <p className={styles.panelSubtitle}>
-                    Control in-app alerts (bell menu and Notifications page). Grouped like notification
-                    channels on iOS and Android so you can turn off whole categories.
-                  </p>
-                </header>
+                {!narrowLayout && (
+                  <header className={styles.panelHeader}>
+                    <h2 id="notifications-heading" className={styles.panelTitle}>
+                      {NOTIFICATIONS_PANEL_META.title}
+                    </h2>
+                    <p className={styles.panelSubtitle}>{NOTIFICATIONS_PANEL_META.subtitle}</p>
+                  </header>
+                )}
 
-                <div className={styles.panelBody}>
-                  {isNotificationsFeedback && feedback?.type === 'error' && (
-                    <div
-                      className={`${styles.feedback} ${styles.feedbackError} ${styles.notificationPrefsFeedback}`}
-                      role="alert"
+                <div className={`${styles.panelBody} ${styles.settingsStackBody}`}>
+                  {narrowLayout ? (
+                    <h2
+                      id="notifications-heading"
+                      className={styles.mobilePanelSectionTitle}
                     >
-                      {feedback.message}
-                    </div>
-                  )}
+                      {NOTIFICATIONS_PANEL_META.title}
+                    </h2>
+                  ) : null}
+                  <div className={styles.settingsSubsection}>
+                    <div className={styles.flatControls}>
+                      {isNotificationsFeedback && (
+                        <div
+                          className={`${styles.feedback} ${
+                            feedback.type === 'error' ? styles.feedbackError : styles.feedbackSuccess
+                          } ${styles.notificationPrefsFeedback}`}
+                          role={feedback.type === 'error' ? 'alert' : 'status'}
+                        >
+                          {feedback.message}
+                        </div>
+                      )}
 
-                  <div className={styles.controlList} role="list">
-                    <div className={styles.settingRow} role="listitem">
-                      <div className={styles.controlCopy}>
-                        <h3 className={styles.controlTitle}>All notifications</h3>
-                        <p className={styles.controlText}>
-                          Master switch. When off, nothing new appears in your feed until you turn this
-                          back on.
-                        </p>
-                      </div>
-                      <div className={styles.controlCta}>
-                        <label className={styles.switch}>
-                          <input
-                            type="checkbox"
-                            role="switch"
-                            aria-label="Enable all in-app notifications"
-                            checked={notificationPrefs.enabled}
-                            disabled={notificationPrefsLoading}
-                            onChange={(e) => saveNotificationPrefs({ enabled: e.target.checked })}
-                          />
-                          <span
-                            className={`${styles.switchTrack} ${
-                              notificationPrefs.enabled ? styles.switchTrackOn : ''
-                            }`}
-                            aria-hidden="true"
-                          >
-                            <span className={styles.switchThumb} />
-                          </span>
-                        </label>
+                      <div className={`${styles.settingRow} ${SR.settingRow}`}>
+                        <div className={styles.controlCopy}>
+                          <h3 className={styles.controlTitle}>All notifications</h3>
+                          <p className={styles.controlText}>
+                            Master switch. When off, nothing new appears in your feed until you turn this
+                            back on.
+                          </p>
+                        </div>
+                        <div className={`${styles.controlCta} ${SR.controlCta}`}>
+                          <label className={styles.switch}>
+                            <input
+                              type="checkbox"
+                              role="switch"
+                              aria-label="Enable all in-app notifications"
+                              checked={notificationPrefs.enabled}
+                              disabled={notificationPrefsLoading}
+                              onChange={(e) => saveNotificationPrefs({ enabled: e.target.checked })}
+                            />
+                            <span
+                              className={`${styles.switchTrack} ${
+                                notificationPrefs.enabled ? styles.switchTrackOn : ''
+                              }`}
+                              aria-hidden="true"
+                            >
+                              <span className={styles.switchThumb} />
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <p className={styles.notificationChannelIntro}>
-                    By category — turn off types you do not want while keeping the rest.
-                  </p>
+                  <div className={styles.settingsSubsection}>
+                    <p className={styles.notificationChannelIntro}>
+                      By category, turn off types you do not want while keeping the rest.
+                    </p>
 
-                  <div className={styles.controlList} role="list" aria-label="Notification categories">
+                    <div className={styles.controlList} role="list" aria-label="Notification categories">
                     <div className={styles.notificationGroupHeader} id="notif-grp-financial">
                       Financial alerts
                     </div>
-                    <div className={styles.settingRow} role="listitem">
+                    <div className={`${styles.settingRow} ${SR.settingRow}`} role="listitem">
                       <div className={styles.controlCopy}>
                         <h3 className={styles.controlTitle}>Cash flow & liquidity</h3>
                         <p className={styles.controlText}>
@@ -1545,7 +1781,7 @@ export function SettingsPage() {
                           outlook).
                         </p>
                       </div>
-                      <div className={styles.controlCta}>
+                      <div className={`${styles.controlCta} ${SR.controlCta}`}>
                         <label className={styles.switch}>
                           <input
                             type="checkbox"
@@ -1566,14 +1802,14 @@ export function SettingsPage() {
                         </label>
                       </div>
                     </div>
-                    <div className={styles.settingRow} role="listitem">
+                    <div className={`${styles.settingRow} ${SR.settingRow}`} role="listitem">
                       <div className={styles.controlCopy}>
                         <h3 className={styles.controlTitle}>Forecasts</h3>
                         <p className={styles.controlText}>
                           Alerts when new forecast results or forecast-related events are ready.
                         </p>
                       </div>
-                      <div className={styles.controlCta}>
+                      <div className={`${styles.controlCta} ${SR.controlCta}`}>
                         <label className={styles.switch}>
                           <input
                             type="checkbox"
@@ -1598,14 +1834,14 @@ export function SettingsPage() {
                     <div className={styles.notificationGroupHeader} id="notif-grp-data">
                       Data &amp; quality
                     </div>
-                    <div className={styles.settingRow} role="listitem">
+                    <div className={`${styles.settingRow} ${SR.settingRow}`} role="listitem">
                       <div className={styles.controlCopy}>
                         <h3 className={styles.controlTitle}>Expense anomalies</h3>
                         <p className={styles.controlText}>
                           Reminders to review flagged months on the expense anomaly chart.
                         </p>
                       </div>
-                      <div className={styles.controlCta}>
+                      <div className={`${styles.controlCta} ${SR.controlCta}`}>
                         <label className={styles.switch}>
                           <input
                             type="checkbox"
@@ -1630,14 +1866,14 @@ export function SettingsPage() {
                     <div className={styles.notificationGroupHeader} id="notif-grp-insights">
                       Insights
                     </div>
-                    <div className={styles.settingRow} role="listitem">
+                    <div className={`${styles.settingRow} ${SR.settingRow}`} role="listitem">
                       <div className={styles.controlCopy}>
                         <h3 className={styles.controlTitle}>Model &amp; data hints</h3>
                         <p className={styles.controlText}>
                           Non-urgent insights such as forecast accuracy (MAPE) and similar tips.
                         </p>
                       </div>
-                      <div className={styles.controlCta}>
+                      <div className={`${styles.controlCta} ${SR.controlCta}`}>
                         <label className={styles.switch}>
                           <input
                             type="checkbox"
@@ -1662,7 +1898,7 @@ export function SettingsPage() {
                     <div className={styles.notificationGroupHeader} id="notif-grp-security">
                       Account &amp; security
                     </div>
-                    <div className={styles.settingRow} role="listitem">
+                    <div className={`${styles.settingRow} ${SR.settingRow}`} role="listitem">
                       <div className={styles.controlCopy}>
                         <h3 className={styles.controlTitle}>Sign-in &amp; 2FA</h3>
                         <p className={styles.controlText}>
@@ -1670,7 +1906,7 @@ export function SettingsPage() {
                           (in-app).
                         </p>
                       </div>
-                      <div className={styles.controlCta}>
+                      <div className={`${styles.controlCta} ${SR.controlCta}`}>
                         <label className={styles.switch}>
                           <input
                             type="checkbox"
@@ -1692,74 +1928,85 @@ export function SettingsPage() {
                       </div>
                     </div>
                   </div>
+                  </div>
                 </div>
               </section>
 
               <section className={styles.panel} aria-labelledby="accessibility-heading">
-                <header className={styles.panelHeader}>
-                  <h2 id="accessibility-heading" className={styles.panelTitle}>
-                    Accessibility & appearance
-                  </h2>
-                  <p className={styles.panelSubtitle}>
-                    Adjust how PredictIQ looks. Your choices are saved on this device.
-                  </p>
-                </header>
+                {!narrowLayout && (
+                  <header className={styles.panelHeader}>
+                    <h2 id="accessibility-heading" className={styles.panelTitle}>
+                      {ACCESSIBILITY_PANEL_META.title}
+                    </h2>
+                    <p className={styles.panelSubtitle}>{ACCESSIBILITY_PANEL_META.subtitle}</p>
+                  </header>
+                )}
 
-                <div className={styles.panelBody}>
-                  <div className={styles.controlList} role="list">
-                    <div className={styles.settingRow} role="listitem">
-                      <div className={styles.controlCopy}>
-                        <h3 className={styles.controlTitle}>Dark mode</h3>
-                        <p className={styles.controlText}>
-                          Use a dark background with light text across the app and charts.
-                        </p>
+                <div className={`${styles.panelBody} ${styles.settingsStackBody}`}>
+                  {narrowLayout ? (
+                    <h2
+                      id="accessibility-heading"
+                      className={styles.mobilePanelSectionTitle}
+                    >
+                      {ACCESSIBILITY_PANEL_META.title}
+                    </h2>
+                  ) : null}
+                  <div className={styles.settingsSubsection}>
+                    <div className={styles.controlList} role="list">
+                      <div className={`${styles.settingRow} ${SR.settingRow}`} role="listitem">
+                        <div className={styles.controlCopy}>
+                          <h3 className={styles.controlTitle}>Dark mode</h3>
+                          <p className={styles.controlText}>
+                            Use a dark background with light text across the app and charts.
+                          </p>
+                        </div>
+                        <div className={`${styles.controlCta} ${SR.controlCta}`}>
+                          <label className={styles.switch}>
+                            <input
+                              type="checkbox"
+                              role="switch"
+                              aria-label="Toggle dark mode"
+                              checked={mode === 'dark'}
+                              onChange={(e) => setMode(e.target.checked ? 'dark' : 'light')}
+                            />
+                            <span
+                              className={`${styles.switchTrack} ${mode === 'dark' ? styles.switchTrackOn : ''}`}
+                              aria-hidden="true"
+                            >
+                              <span className={styles.switchThumb} />
+                            </span>
+                          </label>
+                        </div>
                       </div>
-                      <div className={styles.controlCta}>
-                        <label className={styles.switch}>
-                          <input
-                            type="checkbox"
-                            role="switch"
-                            aria-label="Toggle dark mode"
-                            checked={mode === 'dark'}
-                            onChange={(e) => setMode(e.target.checked ? 'dark' : 'light')}
-                          />
-                          <span
-                            className={`${styles.switchTrack} ${mode === 'dark' ? styles.switchTrackOn : ''}`}
-                            aria-hidden="true"
-                          >
-                            <span className={styles.switchThumb} />
-                          </span>
-                        </label>
-                      </div>
-                    </div>
 
-                    <div className={styles.settingRow} role="listitem">
-                      <div className={styles.controlCopy}>
-                        <h3 className={styles.controlTitle}>Reduced motion</h3>
-                        <p className={styles.controlText}>
-                          Turn off transitions and chart motion in PredictIQ. Other animated
-                          elements follow your system “Reduce motion” setting when it is on. Your
-                          choice is saved on this device.
-                        </p>
-                      </div>
-                      <div className={styles.controlCta}>
-                        <label className={styles.switch}>
-                          <input
-                            type="checkbox"
-                            role="switch"
-                            aria-label="Reduce motion across PredictIQ"
-                            checked={reducedMotionEnabled}
-                            onChange={(e) => setReducedMotionEnabled(e.target.checked)}
-                          />
-                          <span
-                            className={`${styles.switchTrack} ${
-                              reducedMotionEnabled ? styles.switchTrackOn : ''
-                            }`}
-                            aria-hidden="true"
-                          >
-                            <span className={styles.switchThumb} />
-                          </span>
-                        </label>
+                      <div className={`${styles.settingRow} ${SR.settingRow}`} role="listitem">
+                        <div className={styles.controlCopy}>
+                          <h3 className={styles.controlTitle}>Reduced motion</h3>
+                          <p className={styles.controlText}>
+                            Turn off transitions and chart motion in PredictIQ. Other animated
+                            elements follow your system “Reduce motion” setting when it is on. Your
+                            choice is saved on this device.
+                          </p>
+                        </div>
+                        <div className={`${styles.controlCta} ${SR.controlCta}`}>
+                          <label className={styles.switch}>
+                            <input
+                              type="checkbox"
+                              role="switch"
+                              aria-label="Reduce motion across PredictIQ"
+                              checked={reducedMotionEnabled}
+                              onChange={(e) => setReducedMotionEnabled(e.target.checked)}
+                            />
+                            <span
+                              className={`${styles.switchTrack} ${
+                                reducedMotionEnabled ? styles.switchTrackOn : ''
+                              }`}
+                              aria-hidden="true"
+                            >
+                              <span className={styles.switchThumb} />
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1768,7 +2015,7 @@ export function SettingsPage() {
             </>
           )}
         </div>
-      </main>
+      </div>
 
       <ConfirmationModal
         isOpen={!!modalType}

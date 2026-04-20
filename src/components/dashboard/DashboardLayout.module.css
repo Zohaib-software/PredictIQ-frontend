@@ -221,7 +221,7 @@
   margin-left: 72px;
 }
 
-/* Top bar — above sidebar so dropdown can overlay */
+/* Top bar: above sidebar so dropdown can overlay */
 .topbar {
   position: sticky;
   top: 0;
@@ -326,13 +326,18 @@
   line-height: 1;
 }
 
-/* Dropdown opens to the right of the bell so it stays in viewport, above sidebar */
-.notificationsDropdown {
+/* Positioning wrapper: under bell, panel extends to the right (left edge aligned with bell) */
+.notificationsDropdownShell {
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  width: 360px;
-  max-width: calc(100vw - 2rem);
+  right: auto;
+  z-index: 1000;
+}
+
+.notificationsDropdown {
+  /* Cap width so a right-anchored panel (under the bell) does not extend under the fixed sidebar */
+  width: min(360px, calc(100vw - 280px));
   max-height: 400px;
   display: flex;
   flex-direction: column;
@@ -340,8 +345,8 @@
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .notificationsDropdownHeader {
@@ -404,6 +409,7 @@
   color: var(--color-primary-text);
   margin-bottom: 0.2rem;
   display: block;
+  overflow-wrap: anywhere;
 }
 
 .notificationItemMessage {
@@ -412,6 +418,7 @@
   color: var(--color-secondary-text);
   margin-bottom: 0.2rem;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .notificationItemMeta {
@@ -420,7 +427,10 @@
 }
 
 .notificationChartCta {
-  display: inline-block;
+  display: block;
+  box-sizing: border-box;
+  width: calc(100% - 2rem);
+  max-width: 100%;
   margin: 0 1rem 0.65rem;
   padding: 0.45rem 0.85rem;
   font-size: 0.8rem;
@@ -434,6 +444,7 @@
   font-family: inherit;
   position: relative;
   z-index: 1;
+  overflow-wrap: anywhere;
   transition:
     background var(--transition-fast, 0.15s ease),
     box-shadow var(--transition-fast, 0.15s ease),
@@ -634,6 +645,16 @@
   .overlay {
     display: none !important;
   }
+
+  /*
+   * Notifications stay absolute under the bell: allow overflow past the main column edge and
+   * stack above the fixed sidebar (z-index 40) so the panel is not clipped or hidden behind it.
+   */
+  .mainArea {
+    overflow: visible;
+    position: relative;
+    z-index: 45;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -659,6 +680,28 @@
   }
   .profileName {
     display: none;
+  }
+
+  .content {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Notifications: fixed strip + flex center so panel stays in view (not tied to bell width) */
+  .notificationsDropdownShell {
+    position: fixed;
+    top: calc(var(--app-header-height) + 8px);
+    left: max(0.75rem, env(safe-area-inset-left, 0px));
+    right: max(0.75rem, env(safe-area-inset-right, 0px));
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    pointer-events: none;
+  }
+
+  .notificationsDropdownShell .notificationsDropdown {
+    pointer-events: auto;
+    width: min(360px, 100%);
+    max-width: 100%;
   }
 }
 

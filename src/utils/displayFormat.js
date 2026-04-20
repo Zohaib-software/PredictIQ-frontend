@@ -1,5 +1,5 @@
 /**
- * Display number formatting — en-GB locale for GBP, thousands separators, and readable stats.
+ * Display number formatting: en-GB locale for GBP, thousands separators, and readable stats.
  * Use these helpers site-wide so figures stay consistent (avoid raw toFixed / mixed locales).
  */
 
@@ -8,7 +8,7 @@ const LOCALE = 'en-GB';
 // --- GBP: currency ---
 
 /**
- * Chart Y-axis — compact £ labels (e.g. £3.5M, £350K). Short ticks; pair tooltips with formatGbp / formatGbpFull.
+ * Chart Y-axis: compact £ labels (e.g. £3.5M, £350K). Short ticks; pair tooltips with formatGbp / formatGbpFull.
  */
 export function formatChartAxisGBP(value) {
   const n = Number(value);
@@ -24,10 +24,27 @@ export function formatChartAxisGBP(value) {
   }).format(n);
 }
 
-/** Funnel / small KPI tiles — compact £. */
+/**
+ * Narrow chart axes (mobile): shorter tick strings; integer compact units where possible so the
+ * Y-axis gutter can stay slim without clipping.
+ */
+export function formatChartAxisGBPNarrow(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '';
+  return new Intl.NumberFormat(LOCALE, {
+    style: 'currency',
+    currency: 'GBP',
+    notation: 'compact',
+    compactDisplay: 'short',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(n);
+}
+
+/** Funnel / small KPI tiles: compact £. */
 export function formatFunnelGbp(value) {
   const n = Number(value);
-  if (!Number.isFinite(n)) return '—';
+  if (!Number.isFinite(n)) return '-';
   return new Intl.NumberFormat(LOCALE, {
     style: 'currency',
     currency: 'GBP',
@@ -39,7 +56,7 @@ export function formatFunnelGbp(value) {
 }
 
 /**
- * Headline figures where full GBP strings are too long — e.g. £8.23bn, £592m (en-GB compact).
+ * Headline figures where full GBP strings are too long, for example £8.23bn, £592m (en-GB compact).
  * Hover tooltips should use {@link formatGbpFull} for the exact amount.
  */
 export const formatGbpCompact = formatFunnelGbp;
@@ -47,7 +64,7 @@ export const formatGbpCompact = formatFunnelGbp;
 /** Full GBP with two decimal places (reconciliation, title/tooltip “exact” amounts). */
 export function formatGbpFull(value) {
   const n = Number(value);
-  if (!Number.isFinite(n)) return '—';
+  if (!Number.isFinite(n)) return '-';
   return new Intl.NumberFormat(LOCALE, {
     style: 'currency',
     currency: 'GBP',
@@ -57,11 +74,11 @@ export function formatGbpFull(value) {
 }
 
 /**
- * Default GBP for tables, KPIs, chart tooltips — proper £ and grouping; up to 2 dp, no trailing noise.
+ * Default GBP for tables, KPIs, chart tooltips: proper £ and grouping; up to 2 dp, no trailing noise.
  */
 export function formatGbp(value) {
   const n = Number(value);
-  if (!Number.isFinite(n)) return '—';
+  if (!Number.isFinite(n)) return '-';
   return new Intl.NumberFormat(LOCALE, {
     style: 'currency',
     currency: 'GBP',
@@ -74,18 +91,31 @@ export function formatGbp(value) {
 
 export function formatPercentPoints(value, fractionDigits = 1) {
   const n = Number(value);
-  if (!Number.isFinite(n)) return '—';
+  if (!Number.isFinite(n)) return '-';
   return new Intl.NumberFormat(LOCALE, {
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   }).format(n) + '%';
 }
 
+/**
+ * Traffic-light cue for model MAPE (same units as `formatPercentPoints`, e.g. 3.55 => 3.55%).
+ * Green below 15%, yellow from 15% through 20%, red above 20%.
+ */
+export function getForecastAccuracyMapeTone(mape) {
+  if (mape == null || mape === '') return null;
+  const n = Number(mape);
+  if (!Number.isFinite(n)) return null;
+  if (n < 15) return 'good';
+  if (n <= 20) return 'warn';
+  return 'bad';
+}
+
 // --- Plain decimals (correlations, elasticity, model metrics) ---
 
 export function formatDecimal(value, fractionDigits = 2) {
   const n = Number(value);
-  if (!Number.isFinite(n)) return '—';
+  if (!Number.isFinite(n)) return '-';
   return new Intl.NumberFormat(LOCALE, {
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
@@ -95,7 +125,7 @@ export function formatDecimal(value, fractionDigits = 2) {
 /** Counts and integers with grouping (e.g. histogram frequency). */
 export function formatInteger(value) {
   const n = Number(value);
-  if (!Number.isFinite(n)) return '—';
+  if (!Number.isFinite(n)) return '-';
   return new Intl.NumberFormat(LOCALE, {
     maximumFractionDigits: 0,
   }).format(n);

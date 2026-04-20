@@ -28,6 +28,18 @@
   padding: 1rem;
 }
 
+.filterHint {
+  font-size: 0.75rem;
+  color: var(--color-secondary-text);
+  margin: 0 0 0.75rem;
+  line-height: 1.45;
+}
+
+.filterHint strong {
+  font-weight: 600;
+  color: var(--color-primary-text);
+}
+
 .tableWrap {
   overflow-x: auto;
 }
@@ -79,10 +91,41 @@
   cursor: not-allowed;
 }
 
-.logsHeader {
+/* Standalone refresh when logs list is not shown yet (loading / empty). */
+.logsToolbarMinimal {
   display: flex;
   justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.adminFilterToolbarOuter {
   margin-bottom: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+  background: rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+}
+
+.adminFilterToolbarInner {
+  padding: 0.65rem 0.85rem 0.45rem !important;
+}
+
+.adminFilterToolbarFootnote {
+  margin: 0 !important;
+  padding: 0.45rem 0.85rem 0.6rem;
+  border-top: 1px solid var(--color-border-light);
+  font-size: 0.72rem;
+}
+
+@media (max-width: 768px) {
+  .adminFilterToolbarInner {
+    padding: 0.65rem 0.75rem 0.45rem !important;
+  }
+
+  .adminFilterToolbarFootnote {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
 }
 
 .statusSuccess {
@@ -119,4 +162,277 @@
   border: 1px solid rgba(194, 69, 60, 0.35);
   color: var(--color-primary-text);
   font-size: 0.9rem;
+}
+
+/* Desktop / tablet: table; mobile (≤768px): stacked cards (matches Transactions records). */
+.cardList {
+  display: none;
+}
+
+.cardListEmpty {
+  margin: 0;
+  padding: 1rem 0.25rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--color-secondary-text);
+}
+
+.adminCard {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  background: rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
+.adminCardHeader {
+  margin-bottom: 0.65rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.adminCardTitle {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-primary-text);
+  line-height: 1.35;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.adminCardSubtitle {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.4;
+  color: var(--color-secondary-text);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.adminCardRoute {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--color-secondary-text);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.adminCardMethod {
+  font-weight: 700;
+  color: var(--color-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.adminCardRoutePath {
+  color: var(--color-primary-text);
+}
+
+.adminCardGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 0.85rem;
+  margin: 0;
+}
+
+.adminCardStat {
+  margin: 0;
+  min-width: 0;
+}
+
+.adminCardStat dt {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-secondary-text);
+  margin: 0 0 0.15rem;
+  font-weight: 600;
+}
+
+.adminCardStat dd {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary-text);
+  line-height: 1.3;
+}
+
+.adminCardStatWide {
+  grid-column: 1 / -1;
+}
+
+.adminCardRoleCell {
+  margin: 0;
+}
+
+.adminCardRoleCell .roleToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.45rem 0.75rem;
+}
+
+.adminCardMono {
+  font-size: 0.82rem;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.adminCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  justify-content: flex-end;
+}
+
+.adminCardActions .deleteBtn {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  padding: 0.5rem 0.75rem;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid var(--color-border-light);
+  font-size: 0.9rem;
+  color: var(--color-secondary-text);
+}
+
+.paginationMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.1rem;
+}
+
+.rowsPerPage {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--color-secondary-text);
+  font-size: 0.9rem;
+}
+
+.rowsPerPage span {
+  font-weight: 600;
+  color: var(--color-primary-text);
+}
+
+.rowsPerPage select {
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-card-bg);
+  color: var(--color-primary-text);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.rowsPerPage select:hover {
+  border-color: var(--color-accent);
+}
+
+.paginationBtns {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.paginationBtns button {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-card-bg);
+  color: var(--color-primary-text);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.paginationBtns button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationBtns button:not(:disabled):hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 16px;
+    box-sizing: border-box;
+  }
+
+  .logsHeader {
+    margin-bottom: 0.85rem;
+  }
+
+  .logsHeader .refreshBtn {
+    width: 100%;
+    text-align: center;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .tableWrap {
+    display: none;
+  }
+
+  .cardList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .pagination {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+    padding-top: 0.85rem;
+  }
+
+  .paginationMeta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.65rem;
+  }
+
+  .paginationBtns {
+    width: 100%;
+    justify-content: stretch;
+    gap: 0.65rem;
+  }
+
+  .paginationBtns button {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .rowsPerPage {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .rowsPerPage select {
+    flex: 1;
+    max-width: 8rem;
+  }
 }

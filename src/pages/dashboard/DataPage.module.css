@@ -19,25 +19,45 @@
   color: var(--color-secondary-text);
 }
 
-/* Filters */
+/* Filters: flat row everywhere (no nested “card” inside chart cards). */
 .filtersBar {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .filtersBarEmbedded {
   margin-bottom: 0;
-  padding: 0.9rem 1rem 0.8rem;
+  padding: 0;
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--color-border-light);
+  border-radius: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Filter row inside an outer card (e.g. Overview chart): same flat treatment */
+.filtersBarPlain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0;
+  background: transparent;
+  border: none;
   border-radius: 0;
   width: 100%;
   max-width: 100%;
@@ -247,6 +267,65 @@
   flex-wrap: wrap;
 }
 
+/* Chart FilterBar: on mobile, keep start / end / reset on one row (no sort/search extras). */
+@media (max-width: 768px) {
+  .filtersBar,
+  .filtersBarPlain {
+    gap: 0.5rem 1rem;
+    padding-top: var(--filters-bar-padding-y-mobile);
+    padding-bottom: var(--filters-bar-padding-y-mobile);
+    margin-bottom: var(--filters-bar-padding-y-mobile);
+  }
+
+  .filtersBar:not(:has(.filtersBarRightControls)),
+  .filtersBarPlain:not(:has(.filtersBarRightControls)) {
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+  }
+
+  .filtersBar:not(:has(.filtersBarRightControls)) .dateRange:not(:has(.resetFilters)),
+  .filtersBarPlain:not(:has(.filtersBarRightControls)) .dateRange:not(:has(.resetFilters)) {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .filtersBar:not(:has(.filtersBarRightControls)) .dateRange:has(.resetFilters),
+  .filtersBarPlain:not(:has(.filtersBarRightControls)) .dateRange:has(.resetFilters) {
+    flex: 0 0 auto;
+  }
+
+  .filtersBar:not(:has(.filtersBarRightControls)) .dateRange input[type='date'],
+  .filtersBarPlain:not(:has(.filtersBarRightControls)) .dateRange input[type='date'] {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    font-size: 0.8125rem;
+    padding: 0.32rem 0.3rem;
+  }
+
+  .filtersBar:not(:has(.filtersBarRightControls)) .dateRangeLabel,
+  .filtersBarPlain:not(:has(.filtersBarRightControls)) .dateRangeLabel {
+    font-size: 0.6875rem;
+    padding-bottom: 0.1rem;
+  }
+
+  .filtersBar:not(:has(.filtersBarRightControls)) .resetFilters,
+  .filtersBarPlain:not(:has(.filtersBarRightControls)) .resetFilters {
+    padding: 0 0.45rem;
+    font-size: 0.8125rem;
+    height: 32px;
+  }
+
+  .dateRange:has(.resetFilters) {
+    gap: 0;
+  }
+
+  .dateRange:has(.resetFilters) .dateRangeLabel {
+    display: none;
+  }
+}
+
 /* KPI cards */
 .kpiGrid {
   display: grid;
@@ -255,23 +334,95 @@
   margin-bottom: 1.5rem;
 }
 
+.kpiCard {
+  padding: 1rem 1.25rem;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+
 @media (max-width: 900px) {
   .kpiGrid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 500px) {
+.kpiChartFullBleedDivider {
+  display: none;
+}
+
+/* Mobile / small tablet KPI list: aligns with chart full-bleed (≤768px). */
+@media (max-width: 768px) {
   .kpiGrid {
     grid-template-columns: 1fr;
+    gap: 0;
+    border-top: 1px solid var(--color-border-light);
+    margin-bottom: 0.75rem;
+  }
+
+  .kpiCard {
+    /* Match mobile KPI horizontal rhythm; row dividers */
+    padding: 0.9rem 1rem 0.8rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .kpiCard:last-child {
+    border-bottom: none;
+  }
+
+  .kpiGrid .skeletonCard {
+    height: auto;
+    min-height: 4.25rem;
+    box-sizing: border-box;
+    padding: 0.9rem 1rem 0.8rem;
+    border-radius: 0;
+    border-bottom: 1px solid var(--color-border-light);
+    background: linear-gradient(
+      90deg,
+      var(--color-border-light) 25%,
+      rgba(255, 255, 255, 0.06) 50%,
+      var(--color-border-light) 75%
+    );
+    background-size: 200% 100%;
+  }
+
+  .kpiGrid .skeletonCard:last-child {
+    border-bottom: none;
+  }
+
+  /* Full-bleed rule between KPI block and chart (641–768px uses 1.5rem content padding). */
+  .kpiChartFullBleedDivider {
+    display: block;
+    height: 1px;
+    width: calc(100% + 3rem);
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    background: var(--color-border-light);
+    flex-shrink: 0;
   }
 }
 
-.kpiCard {
-  padding: 1rem 1.25rem;
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
+@media (max-width: 640px) {
+  .kpiChartFullBleedDivider {
+    width: calc(100% + 2rem);
+    margin-left: -1rem;
+    margin-right: -1rem;
+  }
+}
+
+/* Overview: horizontal inset for trend controls when chart section is full-bleed on small screens */
+@media (max-width: 768px) {
+  .overviewProjectionFooterInset {
+    padding-top: 0.12rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    box-sizing: border-box;
+  }
 }
 
 .kpiLabel {
@@ -307,6 +458,62 @@
   border-radius: var(--radius-md);
 }
 
+@media (max-width: 768px) {
+  .chartSection {
+    margin-bottom: 1.25rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+/*
+ * Break out of dashboard `.content` horizontal padding so the chart uses the full main column width.
+ * Must match DashboardLayout: 1rem padding ≤640px, 1.5rem padding 641px–1024px.
+ */
+@media (max-width: 640px) {
+  .chartSectionFullBleed {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    width: calc(100% + 2rem);
+    max-width: none;
+    box-sizing: border-box;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .chartSectionFullBleed {
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    width: calc(100% + 3rem);
+    max-width: none;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 768px) {
+  .chartSectionFullBleed .chartTitle,
+  .chartSectionFullBleed .chartSubtitle {
+    padding-left: var(--filters-bar-padding-inline-mobile);
+    padding-right: var(--filters-bar-padding-inline-mobile);
+    box-sizing: border-box;
+  }
+
+  .chartSectionFullBleed .filtersBarPlain {
+    padding-left: var(--filters-bar-padding-inline-mobile);
+    padding-right: var(--filters-bar-padding-inline-mobile);
+    box-sizing: border-box;
+  }
+
+  /* ChartCard.cardFiltersBar already insets on mobile; avoid double padding with rule above. */
+  .chartSectionFullBleed [data-chart-slot='filters'] .filtersBarPlain {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
 .chartTitle {
   font-size: 1rem;
   font-weight: 600;
@@ -322,7 +529,114 @@
   color: var(--color-secondary-text);
 }
 
-/* Chart + trend footer: do not fix outer height — footer must stack below the plot (was overlapping Records). */
+/* Overview data chart: custom legend (two rows, tappable chips) */
+.dataChartLegend {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.28rem;
+  width: 100%;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  font-size: 0.8125rem;
+  line-height: 1.25;
+}
+
+.dataChartLegendRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 0.85rem;
+}
+
+.dataChartLegendRowProjected {
+  gap: 0.3rem 0.65rem;
+}
+
+.dataChartLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 100%;
+  padding: 0.2rem 0.1rem;
+  margin: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--color-primary-text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.dataChartLegendItem:focus-visible {
+  outline: 2px solid var(--color-focus-ring, var(--color-accent));
+  outline-offset: 2px;
+}
+
+.dataChartLegendSwatchSolid {
+  width: 14px;
+  height: 3px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+.dataChartLegendSwatchRect {
+  width: 12px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.dataChartLegendSwatchRectDashed {
+  width: 12px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border: 2px dashed;
+  background: transparent;
+}
+
+.dataChartLegendSwatchCircle {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dataChartLegendSwatchDashed {
+  width: 16px;
+  height: 0;
+  border: 0;
+  border-top: 2px dashed;
+  flex-shrink: 0;
+}
+
+.dataChartLegendLabel {
+  white-space: nowrap;
+}
+
+.dataChartLegendLabelShort {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .dataChartLegend {
+    font-size: 0.7rem;
+  }
+
+  .dataChartLegendLabelFull {
+    display: none;
+  }
+
+  .dataChartLegendLabelShort {
+    display: inline;
+  }
+}
+
+/* Chart + trend footer: do not fix outer height; footer must stack below the plot (was overlapping Records). */
 .chartWrap {
   display: flex;
   flex-direction: column;
@@ -332,13 +646,34 @@
 
 .chartPlot {
   position: relative;
-  height: 300px;
+  height: clamp(300px, 38vh, 480px);
   width: 100%;
   flex-shrink: 0;
 }
 
+@media (max-width: 768px) {
+  .chartPlot {
+    height: min(72dvh, 620px);
+    min-height: 300px;
+  }
+}
+
+/* Compact plots (e.g. donut + legend): avoid line-chart viewport height on mobile. */
+.chartPlotCompact {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 0.2rem 0 0.55rem;
+}
+
 .chartEmpty {
-  height: 280px;
+  min-height: 280px;
+  height: clamp(280px, 38vh, 460px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -348,12 +683,26 @@
   padding: 1rem;
 }
 
+@media (max-width: 768px) {
+  .chartEmpty {
+    height: min(72dvh, 620px);
+    min-height: 280px;
+  }
+}
+
 .chartSkeleton {
-  height: 300px;
+  height: clamp(300px, 38vh, 480px);
+  min-height: 280px;
   background: linear-gradient(90deg, var(--color-border-light) 25%, rgba(255,255,255,0.05) 50%, var(--color-border-light) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.2s ease-in-out infinite;
   border-radius: var(--radius-sm);
+}
+
+@media (max-width: 768px) {
+  .chartSkeleton {
+    height: min(72dvh, 620px);
+  }
 }
 
 @keyframes shimmer {
@@ -361,7 +710,7 @@
   100% { background-position: -200% 0; }
 }
 
-/* Table — records header + optional selection mode */
+/* Table: records header + optional selection mode */
 .recordsHeaderRow {
   display: flex;
   align-items: center;
@@ -526,7 +875,7 @@
   overflow: hidden;
 }
 
-/* Single-line ellipsis — keeps row height uniform. Full text: native title on span. */
+/* Single-line ellipsis: keeps row height uniform. Full text: native title on span. */
 .tableNotesClamp {
   display: block;
   max-width: 100%;
@@ -787,4 +1136,332 @@
   animation: shimmer 1.2s ease-in-out infinite;
   border-radius: var(--radius-sm);
   margin: 1rem;
+}
+
+@media (max-width: 768px) {
+  .tableSkeleton {
+    height: min(42dvh, 280px);
+    border-radius: var(--radius-md);
+  }
+}
+
+/* Transactions (≤768px): stacked filters + card list */
+
+.transactionsRecordsFilters {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  /* Inset on all sides (same as mobile): breathing room below header row and above hint text */
+  padding: 16px;
+}
+
+/* Desktop / tablet: table only; cards rendered but hidden (same DOM for a11y / no duplicate fetch). */
+.recordsCardList {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .transactionsRecordsFilters {
+    padding: 16px;
+    box-sizing: border-box;
+  }
+
+  .transactionsRecordsFilters .filtersBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .transactionsRecordsFilters .dateRange {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .transactionsRecordsFilters .dateRange input[type='date'] {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .transactionsRecordsFilters .dateRange:has(.resetFilters) .dateRangeLabel {
+    display: none;
+  }
+
+  .transactionsRecordsFilters .dateRange:has(.resetFilters) {
+    gap: 0;
+  }
+
+  .transactionsRecordsFilters .resetFilters {
+    width: 100%;
+    max-width: none;
+    height: 38px;
+  }
+
+  .transactionsRecordsFilters .filtersBarRightControls {
+    margin-left: 0;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .transactionsRecordsFilters .recordsFilterExtras {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.65rem;
+  }
+
+  .transactionsRecordsFilters .filterSelectGroup {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .transactionsRecordsFilters .filterSelect,
+  .transactionsRecordsFilters .recordsNotesSearchInput {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    box-sizing: border-box;
+  }
+
+  .recordsSubtext {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    line-height: 1.45;
+  }
+
+  .recordsHeaderRow {
+    align-items: flex-start;
+  }
+
+  .selectionModeActions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .selectionModeActions .btnSelectMode,
+  .selectionModeActions .btnCancelSelect,
+  .selectionModeActions .btnBulkDelete {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .bulkBarMeta {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .tableWrap {
+    display: none;
+  }
+
+  .recordsCardList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 0 1rem 1rem;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .recordsCardListSelectAll {
+    padding: 0.5rem 0.75rem;
+    margin: 0 0 0.15rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border-light);
+    background: rgba(55, 193, 165, 0.06);
+  }
+
+  .recordsCardListSelectAllLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-primary-text);
+    cursor: pointer;
+    margin: 0;
+  }
+
+  .recordsCardListSelectAllLabel input[type='checkbox'] {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex-shrink: 0;
+    cursor: pointer;
+    accent-color: var(--color-accent);
+  }
+
+  .pagination {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+
+  .paginationMeta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.65rem;
+  }
+
+  .paginationBtns {
+    width: 100%;
+    justify-content: stretch;
+    gap: 0.65rem;
+  }
+
+  .paginationBtns button {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .rowsPerPage {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .rowsPerPage select {
+    flex: 1;
+    max-width: 8rem;
+  }
+}
+
+.recordCard {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  background: rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
+.recordCardTop {
+  margin-bottom: 0.65rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.recordCardCheckboxLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin: 0;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-primary-text);
+}
+
+.recordCardCheckboxLabel input[type='checkbox'] {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--color-accent);
+}
+
+.recordCardPeriod {
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.recordCardPeriodHeading {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+  color: var(--color-primary-text);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.recordCardGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 0.85rem;
+  margin: 0;
+}
+
+.recordCardStat {
+  margin: 0;
+  min-width: 0;
+}
+
+.recordCardStat dt {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-secondary-text);
+  margin: 0 0 0.15rem;
+  font-weight: 600;
+}
+
+.recordCardStat dd {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary-text);
+  line-height: 1.3;
+}
+
+.recordCardStatWide {
+  grid-column: 1 / -1;
+}
+
+.recordCardNotesBlock {
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.recordCardNotesLabel {
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-secondary-text);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.recordCardNotesText {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--color-secondary-text);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.recordCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .recordCardActions {
+    justify-content: stretch;
+  }
+
+  .recordCardActions .pq-btn--table-action {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+  }
 }
