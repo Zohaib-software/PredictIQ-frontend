@@ -14,15 +14,29 @@ export function FinancialRecordsProvider({ children }) {
     setHasFinancialRecords(nextValue);
   }, []);
 
+  /**
+   * Chart fetches can finish in any order; an empty slice must not flip global presence to false
+   * after another chart already confirmed the account has data.
+   */
+  const hintFinancialRecordsFromChart = useCallback((inferred) => {
+    if (inferred !== true && inferred !== false) return;
+    setHasFinancialRecords((prev) => {
+      if (inferred === true) return true;
+      if (prev === true) return true;
+      return false;
+    });
+  }, []);
+
   const value = useMemo(() => {
     return {
       loadingRecords: hasFinancialRecords === null,
       hasFinancialRecords,
       refetchFinancialRecords: () => Promise.resolve(),
       setFinancialRecordsPresence,
+      hintFinancialRecordsFromChart,
       clearFinancialRecords: () => setHasFinancialRecords(false),
     };
-  }, [hasFinancialRecords, setFinancialRecordsPresence]);
+  }, [hasFinancialRecords, hintFinancialRecordsFromChart, setFinancialRecordsPresence]);
 
   return (
     <FinancialRecordsContext.Provider value={value}>{children}</FinancialRecordsContext.Provider>
@@ -37,6 +51,7 @@ export function useFinancialRecords() {
       hasFinancialRecords: true,
       refetchFinancialRecords: () => Promise.resolve(),
       setFinancialRecordsPresence: () => {},
+      hintFinancialRecordsFromChart: () => {},
       clearFinancialRecords: () => {},
     };
   }

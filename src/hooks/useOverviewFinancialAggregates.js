@@ -33,7 +33,13 @@ export function useOverviewFinancialAggregates() {
         startDate: startDate || undefined,
         endDate: endDate || undefined,
       });
-      if ((data?.records || []).length > 0) {
+      const records = data?.records || [];
+      const hasRows = records.length > 0;
+      // Full-range fetch: empty means the account truly has no monthly data yet.
+      // Date-filtered empty must not clear global presence (user may still have data outside the range).
+      if (!startDate && !endDate) {
+        setFinancialRecordsPresence(hasRows);
+      } else if (hasRows) {
         setFinancialRecordsPresence(true);
       }
       setChartData(data);
@@ -41,6 +47,7 @@ export function useOverviewFinancialAggregates() {
       setError(null);
     } catch (err) {
       if (isMissingFinancialDataApiError(err)) {
+        setFinancialRecordsPresence(false);
         setChartData({ records: [], summary: null });
         setSummary(null);
         setError(null);

@@ -58,7 +58,7 @@ export function useChart(fetcher, reloadDeps) {
   const fetcherRef = useRef(fetcher);
   fetcherRef.current = fetcher;
   const { token } = useAuth();
-  const { setFinancialRecordsPresence } = useFinancialRecords();
+  const { hintFinancialRecordsFromChart } = useFinancialRecords();
 
   const reloadSig =
     reloadDeps === undefined || reloadDeps === null
@@ -76,7 +76,7 @@ export function useChart(fetcher, reloadDeps) {
         if (!cancelled) {
           setData(result);
           const inferred = inferHasChartData(result);
-          if (inferred === true) setFinancialRecordsPresence(true);
+          hintFinancialRecordsFromChart(inferred);
         }
       })
       .catch((err) => {
@@ -92,7 +92,7 @@ export function useChart(fetcher, reloadDeps) {
         if (!cancelled) setLoading(false);
       });
     return () => { cancelled = true; };
-  }, [token, reloadSig]);
+  }, [token, reloadSig, hintFinancialRecordsFromChart]);
 
   const refetch = () => {
     setLoading(true);
@@ -101,7 +101,7 @@ export function useChart(fetcher, reloadDeps) {
       .then((result) => {
         setData(result);
         const inferred = inferHasChartData(result);
-        if (inferred === true) setFinancialRecordsPresence(true);
+        hintFinancialRecordsFromChart(inferred);
       })
       .catch((err) => {
         if (isMissingFinancialDataApiError(err)) {
