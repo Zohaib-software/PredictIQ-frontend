@@ -56,7 +56,12 @@ export async function loginWithGoogle({ credential }) {
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    const err = new Error(data.message || 'Google sign-in failed');
+    let message = data.message || 'Google sign-in failed';
+    if (res.status === 404) {
+      message =
+        'Google sign-in is not available on this API yet. Deploy the latest backend (including POST /api/auth/google), then try again.';
+    }
+    const err = new Error(message);
     err.status = res.status;
     err.errors = data.errors;
     throw err;

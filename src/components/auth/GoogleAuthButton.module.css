@@ -1,19 +1,9 @@
+/* Center only — do not resize Google's inner iframe or borders break. */
 .wrap {
   width: 100%;
-  min-height: 44px;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-/* Let the Google iframe scale with the card on narrow screens */
-.wrap :global(> div) {
-  width: 100% !important;
-  max-width: 100%;
-}
-
-.wrap :global(iframe) {
-  max-width: 100% !important;
 }
 
 @media (max-width: 480px) {

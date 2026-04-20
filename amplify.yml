@@ -1,5 +1,11 @@
 version: 1
 frontend:
+  # FedCM / Google Sign-In uses postMessage; allow popups with opener (avoids COOP console errors).
+  customHeaders:
+    - pattern: '**/*'
+      headers:
+        - key: Cross-Origin-Opener-Policy
+          value: same-origin-allow-popups
   phases:
     preBuild:
       commands:
