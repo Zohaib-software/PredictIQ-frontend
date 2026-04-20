@@ -197,6 +197,7 @@ export async function verifyTwoFactorLogin({ twoFactorToken, code }) {
     const err = new Error(data.message || 'Two-factor verification failed');
     err.status = res.status;
     err.errors = data.errors;
+    err.errorCode = data.errorCode;
     throw err;
   }
 

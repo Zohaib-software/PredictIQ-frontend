@@ -39,6 +39,21 @@ const complete2faResetSchema = yup.object({
 const requestEmailResetSchema = yup.object({
   email: yup.string().trim().required('Email is required').email('Enter a valid email address'),
 });
+const TWO_FACTOR_MAX_ATTEMPTS = 5;
+const TWO_FACTOR_LOCK_MS = 30_000;
+
+const mapTwoFactorError = (err) => {
+  switch (err?.errorCode) {
+    case 'two_factor_code_invalid_or_expired':
+      return 'That code is invalid or expired. Try again or use a backup code.';
+    case 'two_factor_token_invalid_or_expired':
+      return 'Your 2FA session expired. Sign in again to request a new code challenge.';
+    case 'two_factor_not_available':
+      return 'Two-factor authentication is not available for this account right now. Sign in again.';
+    default:
+      return err?.message || 'Two-factor verification failed';
+  }
+};
 
 export function LoginPage() {
   const [form, setForm] = useState(initialForm);
@@ -54,6 +69,8 @@ export function LoginPage() {
   const [emailResetSent, setEmailResetSent] = useState(false);
   const [emailResetMessage, setEmailResetMessage] = useState('');
   const [reset2faVerificationToken, setReset2faVerificationToken] = useState(null);
+  const [twoFactorFailures, setTwoFactorFailures] = useState(0);
+  const [twoFactorLockedUntil, setTwoFactorLockedUntil] = useState(null);
   const { login, loginWithGoogle, verifyTwoFactorLogin, completePasswordReset2fa } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -68,6 +85,8 @@ export function LoginPage() {
       setTwoFactorForm(initialTwoFactorForm);
       setErrors({});
       setApiError('');
+      setTwoFactorFailures(0);
+      setTwoFactorLockedUntil(null);
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.pathname, location.state, navigate]);
@@ -84,6 +103,8 @@ export function LoginPage() {
         });
         setTwoFactorForm(initialTwoFactorForm);
         setErrors({});
+        setTwoFactorFailures(0);
+        setTwoFactorLockedUntil(null);
         return;
       }
       navigate('/overview', { replace: true });
@@ -146,12 +167,19 @@ export function LoginPage() {
   const handleSubmitLoginOrTwoFactor = async (e) => {
     e.preventDefault();
     setApiError('');
+    if (isTwoFactorStep && twoFactorLockedUntil && Date.now() < twoFactorLockedUntil) {
+      const waitSeconds = Math.max(1, Math.ceil((twoFactorLockedUntil - Date.now()) / 1000));
+      setApiError(`Too many attempts. Try again in ${waitSeconds}s.`);
+      return;
+    }
     const isValid = await validateStep(isTwoFactorStep ? twoFactorSchema : loginSchema, isTwoFactorStep ? twoFactorForm : form);
     if (!isValid) return;
     setSubmitting(true);
     try {
       if (isTwoFactorStep) {
         await verifyTwoFactorLogin(twoFactorChallenge.twoFactorToken, twoFactorForm.code.trim());
+        setTwoFactorFailures(0);
+        setTwoFactorLockedUntil(null);
         navigate('/overview', { replace: true });
         return;
       }
@@ -166,13 +194,27 @@ export function LoginPage() {
         });
         setTwoFactorForm(initialTwoFactorForm);
         setErrors({});
+        setTwoFactorFailures(0);
+        setTwoFactorLockedUntil(null);
         return;
       }
 
       navigate('/overview', { replace: true });
     } catch (err) {
-      setApiError(err.message || 'Login failed');
-      if (err.errors?.length) {
+      if (isTwoFactorStep) {
+        const nextFailures = twoFactorFailures + 1;
+        setTwoFactorFailures(nextFailures);
+        if (nextFailures >= TWO_FACTOR_MAX_ATTEMPTS) {
+          setTwoFactorFailures(0);
+          setTwoFactorLockedUntil(Date.now() + TWO_FACTOR_LOCK_MS);
+          setApiError('Too many failed attempts. Wait 30 seconds and try again.');
+        } else {
+          setApiError(mapTwoFactorError(err));
+        }
+      } else {
+        setApiError(err.message || 'Login failed');
+      }
+      if (!isTwoFactorStep && err.errors?.length) {
         const byField = {};
         err.errors.forEach(({ field, message }) => { byField[field] = message; });
         setErrors(byField);
@@ -267,6 +309,8 @@ export function LoginPage() {
       setResetSubView(null);
       setTwoFactorChallenge(null);
       setTwoFactorForm(initialTwoFactorForm);
+      setTwoFactorFailures(0);
+      setTwoFactorLockedUntil(null);
       setResetForm(initialResetForm);
       setReset2faVerificationToken(null);
       setEmailOnlyForm(initialEmailOnlyForm);
@@ -454,7 +498,11 @@ export function LoginPage() {
                 />
               </>
             )}
-            <Button type="submit" fullWidth disabled={submitting}>
+            <Button
+              type="submit"
+              fullWidth
+              disabled={submitting || (isTwoFactorStep && twoFactorLockedUntil && Date.now() < twoFactorLockedUntil)}
+            >
               {submitting
                 ? reset2faVerificationToken
                   ? 'Resetting…'
