@@ -1,8 +1,11 @@
 .wrapper {
   --app-header-height: 64px;
   display: flex;
+  /* 100vh = large viewport on mobile; 100dvh follows visible area (browser chrome). */
   height: 100vh;
+  height: 100dvh;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
   background: var(--color-background);
 }
@@ -12,7 +15,8 @@
   position: fixed;
   left: 0;
   top: 0;
-  bottom: 0;
+  height: 100vh;
+  height: 100dvh;
   z-index: 40;
   width: 260px;
   background: var(--color-card-bg);
@@ -210,6 +214,7 @@
   flex: 1;
   margin-left: 260px;
   height: 100vh;
+  height: 100dvh;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -565,6 +570,7 @@
   flex: 1;
   min-height: 0;
   padding: 1.5rem;
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior-y: contain;
@@ -711,5 +717,6 @@
   }
   .content {
     padding: 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
   }
 }
