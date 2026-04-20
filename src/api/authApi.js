@@ -219,14 +219,20 @@ export async function getMe() {
 }
 
 /**
- * Invalidate the server-side refresh token (call before clearing local session).
+ * Best-effort server logout using a token captured before local storage is cleared.
+ * Does not read or modify token storage.
  */
-export async function logoutApi() {
-  try {
-    await fetchWithAuth(`${API_BASE}/logout`, { method: 'POST' });
-  } finally {
-    clearTokens();
+export function notifyServerLogout(accessToken) {
+  if (!accessToken || typeof accessToken !== 'string') {
+    return Promise.resolve();
   }
+  return fetch(`${API_BASE}/logout`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+  }).catch(() => {});
 }
 
 export async function fetchSessions() {

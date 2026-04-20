@@ -4,12 +4,12 @@ import {
   loginWithGoogle as apiLoginWithGoogle,
   register as apiRegister,
   getMe,
-  logoutApi,
+  notifyServerLogout,
   verifyTwoFactorLogin as apiVerifyTwoFactorLogin,
   completePasswordReset2fa as apiCompletePasswordReset2fa,
   completePasswordResetEmail as apiCompletePasswordResetEmail,
 } from '../api/authApi';
-import { ACCESS_TOKEN_KEY, clearTokens, setTokens } from '../api/tokenStorage.js';
+import { ACCESS_TOKEN_KEY, clearTokens, getAccessToken, setTokens } from '../api/tokenStorage.js';
 import { clearChartCache } from '../utils/chartCache';
 
 const AuthContext = createContext(null);
@@ -159,13 +159,15 @@ export function AuthProvider({ children }) {
     return nextUser;
   }, [setToken]);
 
-  const logout = useCallback(async ({ skipServer = false } = {}) => {
-    if (!skipServer) {
-      await logoutApi();
-    }
+  const logout = useCallback(({ skipServer = false } = {}) => {
+    const accessSnapshot = skipServer ? null : getAccessToken();
     setUser(null);
     setTokenState(null);
     clearChartCache();
+    clearTokens();
+    if (accessSnapshot && !skipServer) {
+      void notifyServerLogout(accessSnapshot);
+    }
   }, []);
 
   const updateUser = useCallback((updates) => {
