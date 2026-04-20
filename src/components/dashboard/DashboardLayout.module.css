@@ -130,6 +130,64 @@
   text-overflow: ellipsis;
 }
 
+.navItemWrap {
+  position: relative;
+  width: 100%;
+}
+
+.navItemWrap button.navLink {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.navDropdown {
+  position: absolute;
+  z-index: 60;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.35rem;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+.sidebarClosed .navDropdown {
+  left: calc(100% + 8px);
+  right: auto;
+  top: 0;
+  min-width: 188px;
+}
+
+.navDropdownLink {
+  display: block;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-primary-text);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.navDropdownLink:hover {
+  background: rgba(55, 193, 165, 0.08);
+  color: var(--color-primary-text);
+}
+
+.navDropdownLinkActive {
+  background: rgba(55, 193, 165, 0.14);
+  color: var(--color-accent);
+}
+
 .sidebarFooter {
   padding: 1rem 0.75rem;
   border-top: 1px solid var(--color-border-light);

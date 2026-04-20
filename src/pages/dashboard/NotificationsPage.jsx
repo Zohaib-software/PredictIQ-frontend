@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useNotifications } from '../../context/NotificationContext';
+import { useAuth } from '../../context/AuthContext';
 import { deleteNotificationsBulkAll } from '../../api/notificationsApi';
 import { ConfirmationModal } from '../../components/common/ConfirmationModal';
 import { timeAgo } from '../../utils/timeAgo';
@@ -14,10 +15,16 @@ import {
   navigateToTwoFactorSettingsSection,
   showTwoFactorReminderCta,
 } from '../../utils/securityReminderNotification';
+import {
+  navigateToAdminUserForConsent,
+  showConsentWithdrawalAdminCta,
+} from '../../utils/consentWithdrawalAdminNotification';
 import styles from './NotificationsPage.module.css';
 
 export function NotificationsPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const showAdminNav = user?.role === 'admin';
   const { notifications, unreadCount, markAsRead, markAllAsRead, fetchNotifications } = useNotifications();
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
@@ -214,6 +221,20 @@ export function NotificationsPage() {
                         }}
                       >
                         Open two-factor settings
+                      </button>
+                    </div>
+                  ) : null}
+                  {showAdminNav && showConsentWithdrawalAdminCta(n) ? (
+                    <div className={styles.itemChartLinkWrap}>
+                      <button
+                        type="button"
+                        className={styles.viewChartCta}
+                        onClick={() => {
+                          if (!n.read) markAsRead(n._id);
+                          navigateToAdminUserForConsent(navigate, n.relatedUserId);
+                        }}
+                      >
+                        Open user in admin
                       </button>
                     </div>
                   ) : null}

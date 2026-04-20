@@ -179,6 +179,19 @@
   border-color: var(--color-accent);
 }
 
+/* Shared label typography for Reset + secondary (Refresh); colours differ per variant. */
+.resetFilters,
+.filterBarSecondaryBtn {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1;
+  font-family: inherit;
+  font-style: normal;
+  letter-spacing: normal;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
 /* Width fits label + horizontal padding; fixed height to align with date inputs. */
 .resetFilters {
   position: relative;
@@ -191,17 +204,11 @@
   height: 34px;
   margin: 0;
   padding: 0 0.65rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  line-height: 1;
-  font-family: inherit;
   border: 1px solid var(--color-accent);
   border-radius: var(--radius-sm);
   background: var(--color-accent);
   color: var(--color-card-bg);
   cursor: pointer;
-  text-decoration: none;
-  white-space: nowrap;
   transition:
     border-color var(--transition-fast),
     background var(--transition-fast),
@@ -224,6 +231,51 @@
 .resetFilters:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+.resetFilters:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/**
+ * Same box + text styling as `.resetFilters`; outline colours (not teal fill).
+ */
+.filterBarSecondaryBtn {
+  position: relative;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  max-width: 100%;
+  height: 34px;
+  margin: 0;
+  padding: 0 0.65rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-primary-text);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.filterBarSecondaryBtn:hover:not(:disabled) {
+  border-color: var(--color-border);
+  background: rgba(55, 193, 165, 0.06);
+}
+
+.filterBarSecondaryBtn:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.filterBarSecondaryBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 /* Same pattern as Settings backup Copy / Download (label ↔ tick). */
@@ -258,7 +310,15 @@
   transform: scale(1);
 }
 
-/* Right-aligned container for reset + optional extras (e.g. sort). */
+/* Reset + inline extras (e.g. admin Refresh) — same row, same control height as .resetFilters. */
+.filterBarActionsRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Right-aligned container for optional extras (e.g. Transactions sort). */
 .filtersBarRightControls {
   margin-left: auto;
   display: flex;
@@ -1193,6 +1253,19 @@
   }
 
   .transactionsRecordsFilters .resetFilters {
+    width: 100%;
+    max-width: none;
+    height: 38px;
+  }
+
+  .transactionsRecordsFilters .filterBarActionsRow {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .transactionsRecordsFilters .filterBarSecondaryBtn {
     width: 100%;
     max-width: none;
     height: 38px;

@@ -1,43 +1,8 @@
-.tabRow {
-  display: flex;
-  gap: 0.6rem;
-  margin-bottom: 1rem;
-}
-
-.tabBtn {
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--color-primary-text);
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 0.5rem 0.85rem;
-  cursor: pointer;
-}
-
-.tabBtnActive {
-  background: var(--color-accent);
-  color: var(--color-background);
-  border-color: var(--color-accent);
-}
-
 .section {
   background: var(--color-card-bg);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
   padding: 1rem;
-}
-
-.filterHint {
-  font-size: 0.75rem;
-  color: var(--color-secondary-text);
-  margin: 0 0 0.75rem;
-  line-height: 1.45;
-}
-
-.filterHint strong {
-  font-weight: 600;
-  color: var(--color-primary-text);
 }
 
 .tableWrap {
@@ -47,7 +12,13 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 900px;
+  min-width: 1080px;
+}
+
+.rowHighlight {
+  outline: 2px solid rgba(47, 159, 100, 0.65);
+  outline-offset: -2px;
+  background: rgba(47, 159, 100, 0.08);
 }
 
 .table th,
@@ -98,33 +69,18 @@
   margin-bottom: 0.5rem;
 }
 
+/* No extra border/background — avoids a second “card” inside `.section`. */
 .adminFilterToolbarOuter {
   margin-bottom: 0.75rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-light);
-  background: rgba(0, 0, 0, 0.14);
-  overflow: hidden;
 }
 
 .adminFilterToolbarInner {
   padding: 0.65rem 0.85rem 0.45rem !important;
 }
 
-.adminFilterToolbarFootnote {
-  margin: 0 !important;
-  padding: 0.45rem 0.85rem 0.6rem;
-  border-top: 1px solid var(--color-border-light);
-  font-size: 0.72rem;
-}
-
 @media (max-width: 768px) {
   .adminFilterToolbarInner {
     padding: 0.65rem 0.75rem 0.45rem !important;
-  }
-
-  .adminFilterToolbarFootnote {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
   }
 }
 
@@ -435,4 +391,25 @@
     flex: 1;
     max-width: 8rem;
   }
+}
+
+.feedbackPageCell {
+  max-width: 140px;
+  word-break: break-word;
+}
+
+.feedbackMessageCell {
+  max-width: 360px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.feedbackPage {
+  word-break: break-word;
+}
+
+.feedbackMessage {
+  font-size: 0.88rem;
+  white-space: pre-wrap;
+  word-break: break-word;
 }

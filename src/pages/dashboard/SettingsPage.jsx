@@ -348,6 +348,15 @@ export function SettingsPage() {
       };
     }
 
+    if (modalType === 'withdrawConsent') {
+      return {
+        title: 'Withdraw forecasting consent',
+        message:
+          'You are about to withdraw consent for PredictIQ to process your financial data for forecasting. Forecasting tools will be turned off for your account, administrators will be notified, and any stored financial uploads used for forecasting will be scheduled for removal within 48 hours (if none are stored, nothing further is deleted). This does not delete your account.',
+        confirmLabel: 'Withdraw consent',
+      };
+    }
+
     return null;
   }, [modalType]);
 
@@ -448,18 +457,52 @@ export function SettingsPage() {
 
   const handleConsentChange = async (nextValue) => {
     setFeedback(null);
+    if (nextValue === false) {
+      setModalType('withdrawConsent');
+      return;
+    }
     setConsentLoading(true);
     try {
-      const data = await updateConsent(nextValue);
-      updateUser({ consentGiven: data?.consentGiven ?? nextValue });
+      const data = await updateConsent(true);
+      updateUser({
+        consentGiven: data?.consentGiven ?? true,
+        forecastingAccessEnabled: data?.forecastingAccessEnabled !== false,
+        forecastingDataPurgeAt: data?.forecastingDataPurgeAt ?? null,
+        consentWithdrawnAt: data?.consentWithdrawnAt ?? null,
+      });
       setFeedback({
         type: 'success',
-        message: `Consent ${nextValue ? 'enabled' : 'withdrawn'} successfully.`,
+        message: data?.userMessage || 'Consent enabled successfully.',
       });
     } catch (error) {
       setFeedback({ type: 'error', message: error?.message || 'Failed to update consent.' });
     } finally {
       setConsentLoading(false);
+    }
+  };
+
+  const handleWithdrawConsentConfirmed = async () => {
+    setActionLoading(true);
+    setFeedback(null);
+    try {
+      const data = await updateConsent(false);
+      updateUser({
+        consentGiven: data?.consentGiven ?? false,
+        forecastingAccessEnabled: data?.forecastingAccessEnabled !== false,
+        forecastingDataPurgeAt: data?.forecastingDataPurgeAt ?? null,
+        consentWithdrawnAt: data?.consentWithdrawnAt ?? null,
+      });
+      setFeedback({
+        type: 'success',
+        message:
+          data?.userMessage ||
+          'Consent withdrawn. Forecasting tools are unavailable until you turn consent back on.',
+      });
+      setModalType(null);
+    } catch (error) {
+      setFeedback({ type: 'error', message: error?.message || 'Failed to withdraw consent.' });
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -518,6 +561,10 @@ export function SettingsPage() {
     }
     if (modalType === 'disable2fa') {
       handleDisableTwoFactor();
+      return;
+    }
+    if (modalType === 'withdrawConsent') {
+      handleWithdrawConsentConfirmed();
     }
   };
 
@@ -1187,8 +1234,10 @@ export function SettingsPage() {
                       <div className={`${styles.twoFactorSetupMedia} ${SR.twoFactorSetupMedia}`}>
                         <div className={styles.twoFactorStepHeaderRow}>
                           <span className={`${styles.badge} ${styles.stepBadge}`}>Step 1</span>
-                          <span className={styles.twoFactorDash}>-</span>
-                          <span className={styles.twoFactorStepTitle}>Set up authenticator</span>
+                          <span className={styles.twoFactorStepHeadingText}>
+                            <span className={styles.twoFactorDash}>-</span>
+                            <span className={styles.twoFactorStepTitle}>Set up authenticator</span>
+                          </span>
                         </div>
                           <div className={`${styles.twoFactorSetupStep1Row} ${SR.twoFactorSetupStep1Row}`}>
                             <img
@@ -1213,8 +1262,10 @@ export function SettingsPage() {
                       <div className={`${styles.twoFactorSetupBody} ${SR.twoFactorSetupBody}`}>
                         <div className={styles.twoFactorStepHeaderRow}>
                           <span className={`${styles.badge} ${styles.stepBadge}`}>Step 2</span>
-                          <span className={styles.twoFactorDash}>-</span>
-                          <span className={styles.twoFactorStepTitle}>Verify code</span>
+                          <span className={styles.twoFactorStepHeadingText}>
+                            <span className={styles.twoFactorDash}>-</span>
+                            <span className={styles.twoFactorStepTitle}>Verify code</span>
+                          </span>
                         </div>
                         <p className={styles.sectionText}>
                           Enter the 6-digit code shown in your authenticator app.
@@ -1254,12 +1305,14 @@ export function SettingsPage() {
 
                   {twoFactorSetupPhase === 'backupCodes' && (
                     <div className={styles.backupCodesPanel}>
-                      <div className={styles.sectionHeader}>
+                      <div className={`${styles.sectionHeader} ${styles.backupCodesSetupHeader}`}>
                         <div>
-                          <div className={styles.twoFactorHeaderRow}>
+                          <div className={styles.twoFactorStepHeaderRow}>
                             <span className={`${styles.badge} ${styles.stepBadge}`}>Step 3 of 3</span>
-                            <span className={styles.twoFactorDash}>-</span>
-                            <h4 className={styles.controlTitle}>Save your backup codes</h4>
+                            <span className={styles.twoFactorStepHeadingText}>
+                              <span className={styles.twoFactorDash}>-</span>
+                              <h4 className={styles.controlTitle}>Save your backup codes</h4>
+                            </span>
                           </div>
                           <p className={styles.controlText}>
                             Each code can be used once. Keep them somewhere safe.

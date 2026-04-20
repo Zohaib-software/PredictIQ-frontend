@@ -48,10 +48,15 @@ const REV_EXP_LEGEND_SHORT_LABELS = {
  * @param {{ labels: string[], revenue?: number[], expenses?: number[] }} data
  * @param {'daily'|'weekly'|'monthly'|'yearly'} periodType - bucket style for projection x-axis labels
  */
-export function RevenueExpensesChart({ data, projectionMonths = 1, periodType = 'monthly' }) {
+export function RevenueExpensesChart({
+  data,
+  projectionMonths = 1,
+  periodType = 'monthly',
+  allowTrendProjection = true,
+}) {
   const { reducedMotionEnabled } = useReducedMotionSetting();
   const { hasFinancialRecords } = useFinancialRecords();
-  const projectionActive = hasFinancialRecords;
+  const projectionActive = allowTrendProjection && hasFinancialRecords;
   const { hidden, onLegendClick } = useLegendToggleGroups(REV_EXP_LEGEND_GROUPS);
 
   if (!data?.labels?.length) return null;

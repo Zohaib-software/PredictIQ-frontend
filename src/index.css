@@ -39,6 +39,20 @@
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
   --transition-slow: 350ms ease;
+  /*
+   * Scroll padding so page content stays clear of the fixed Feedback FAB (FeedbackWidget).
+   * FAB: bottom/right max(1rem, safe-area) + ~2.75rem control; extra gap so text/buttons don’t sit under it.
+   */
+  --feedback-fab-reserve-bottom: calc(2.75rem + 1rem + 0.75rem);
+  /* Icon-only FAB (~2.75rem) + edge offset + margin */
+  --feedback-fab-reserve-right: calc(2.75rem + 1rem + 0.75rem);
+}
+
+@media (min-width: 769px) {
+  :root {
+    /* Icon + “Feedback” label — keep wide enough that pill doesn’t cover copy */
+    --feedback-fab-reserve-right: calc(9rem + 1rem + 1rem);
+  }
 }
 
 *,

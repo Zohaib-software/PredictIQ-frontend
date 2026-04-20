@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { forecastApi } from '../../api/forecastApi';
 import { useChart } from '../../hooks/useChart';
@@ -6,16 +7,26 @@ import { SummaryCard, ForecastSummaryWidget } from '../../components/dashboard/S
 import { FinancialPerformanceSection } from '../../components/dashboard/FinancialPerformanceSection';
 import { useOverviewFinancialAggregates } from '../../hooks/useOverviewFinancialAggregates';
 import { useFinancialRecords, EMPTY_FINANCIAL_CHART_MESSAGE } from '../../context/FinancialRecordsContext';
+import { useAuth } from '../../context/AuthContext';
+import { canUseForecastingTools, getForecastingLockReason } from '../../utils/forecastingAccess';
 import styles from './DashboardPages.module.css';
 
+const noopForecastFetcher = () => Promise.resolve(null);
+
 export function OverviewPage() {
+  const { user } = useAuth();
+  const forecastingLocked = !canUseForecastingTools(user);
+  const lockReason = getForecastingLockReason(user);
   const { hasFinancialRecords, loadingRecords } = useFinancialRecords();
   const fin = useOverviewFinancialAggregates();
   const forecastFetcher = useMemo(
     () => () => forecastApi.cashFlow({ horizon: 6, period: 'monthly' }),
     []
   );
-  const forecast = useChart(forecastFetcher);
+  const forecast = useChart(
+    forecastingLocked ? noopForecastFetcher : forecastFetcher,
+    [forecastingLocked]
+  );
 
   const historicalSeries = useMemo(() => {
     const records = fin.chartData?.records || [];
@@ -49,7 +60,12 @@ export function OverviewPage() {
   const forecast30 = st?.day30?.predictedCashFlow ?? 0;
   const forecast60 = st?.day60?.predictedCashFlow ?? 0;
   const forecast90 = st?.day90?.predictedCashFlow ?? 0;
-  const canDownloadForecastReport = !forecast.loading && !forecast.error && hasFinancialRecords && forecast.data;
+  const canDownloadForecastReport =
+    !forecastingLocked &&
+    !forecast.loading &&
+    !forecast.error &&
+    hasFinancialRecords &&
+    forecast.data;
 
   const handleDownloadForecastReport = () => {
     if (!canDownloadForecastReport) return;
@@ -101,6 +117,7 @@ export function OverviewPage() {
         loading={fin.loading}
         error={fin.error}
         onRetry={fin.retry}
+        forecastingLocked={forecastingLocked}
       />
 
       <div className={styles.layoutStack}>
@@ -110,16 +127,36 @@ export function OverviewPage() {
             variant="overviewForecastMobile"
             className={styles.overviewForecastShell}
           >
-            {forecast.loading && (
+            {forecastingLocked && (
+              <div className={styles.forecastConsentLockedStack}>
+                <p className={styles.forecastMuted}>
+                  {lockReason === 'admin' ?
+                    'Forecasting tools are disabled for your account. Cash flow forecast cards and trend projections are turned off until your administrator restores access.'
+                  : 'You have withdrawn consent for PredictIQ to process your financial data for forecasting. Effective immediately, cash flow forecasts and trend projections are unavailable.'}
+                </p>
+                <Link to="/settings/data-uploads" className={styles.forecastDownloadBtn}>
+                  Open Data & uploads in Settings
+                </Link>
+              </div>
+            )}
+            {!forecastingLocked && forecast.loading && (
               <p className={styles.forecastMuted}>Loading forecast…</p>
             )}
-            {forecast.error && (
+            {!forecastingLocked && forecast.error && (
               <p className={styles.forecastError}>{forecast.error}</p>
             )}
-            {!forecast.loading && !forecast.error && !loadingRecords && !hasFinancialRecords && (
+            {!forecastingLocked &&
+              !forecast.loading &&
+              !forecast.error &&
+              !loadingRecords &&
+              !hasFinancialRecords && (
               <p className={styles.forecastMuted}>{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
             )}
-            {!forecast.loading && !forecast.error && hasFinancialRecords && forecast.data && (
+            {!forecastingLocked &&
+              !forecast.loading &&
+              !forecast.error &&
+              hasFinancialRecords &&
+              forecast.data && (
               <>
                 <ForecastSummaryWidget
                   forecast30={forecast30}

@@ -13,8 +13,13 @@ import {
   navigateToTwoFactorSettingsSection,
   showTwoFactorReminderCta,
 } from '../../utils/securityReminderNotification';
+import {
+  navigateToAdminUserForConsent,
+  showConsentWithdrawalAdminCta,
+} from '../../utils/consentWithdrawalAdminNotification';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MOBILE_NAV_MEDIA, getInitialSidebarOpen } from '../../utils/sidebarViewport';
+import { AdminNavDropdown } from './AdminNavDropdown';
 import styles from './DashboardLayout.module.css';
 
 const WELCOME_STORAGE_PREFIX = 'predictiq_welcome_seen_';
@@ -36,10 +41,7 @@ export function DashboardLayout() {
   const { mode, toggleTheme } = useTheme();
   const location = useLocation();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
-  const sidebarNavItems =
-    user?.role === 'admin'
-      ? [...navItems, { path: '/admin', label: 'Admin', icon: '🛡️' }]
-      : navItems;
+  const showAdminNav = user?.role === 'admin';
 
   const handleLogout = () => {
     logout();
@@ -107,7 +109,7 @@ export function DashboardLayout() {
           </button>
         </div>
         <nav className={styles.nav}>
-          {sidebarNavItems.map(({ path, label, icon }) => (
+          {navItems.map(({ path, label, icon }) => (
             <NavLink
               key={path}
               to={path}
@@ -120,6 +122,7 @@ export function DashboardLayout() {
               {sidebarOpen && <span className={styles.navLabel}>{label}</span>}
             </NavLink>
           ))}
+          {showAdminNav && <AdminNavDropdown sidebarOpen={sidebarOpen} />}
         </nav>
         <div className={styles.sidebarFooter}>
           <NavLink
@@ -261,6 +264,19 @@ export function DashboardLayout() {
                                 }}
                               >
                                 Open two-factor settings
+                              </button>
+                            ) : null}
+                            {showAdminNav && showConsentWithdrawalAdminCta(n) ? (
+                              <button
+                                type="button"
+                                className={styles.notificationChartCta}
+                                onClick={() => {
+                                  if (!n.read) markAsRead(n._id);
+                                  navigateToAdminUserForConsent(navigate, n.relatedUserId);
+                                  setNotificationsOpen(false);
+                                }}
+                              >
+                                Open user in admin
                               </button>
                             ) : null}
                           </div>

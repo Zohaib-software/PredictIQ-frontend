@@ -100,6 +100,7 @@ export function FinancialPerformanceSection({
   loading,
   error,
   onRetry,
+  forecastingLocked = false,
 }) {
   const period = CHART_PERIOD;
   const [kpiView, setKpiView] = useState('average');
@@ -176,7 +177,7 @@ export function FinancialPerformanceSection({
       gpProj: null,
     }));
 
-    if (!hasFinancialRecords || fullChartSeries.length < 2) {
+    if (forecastingLocked || !hasFinancialRecords || fullChartSeries.length < 2) {
       return { mergedChartRows: base, showChartProjection: false };
     }
 
@@ -227,7 +228,7 @@ export function FinancialPerformanceSection({
     } catch {
       return { mergedChartRows: base, showChartProjection: false };
     }
-  }, [fullChartSeries, dataProjectionSteps, hasFinancialRecords]);
+  }, [fullChartSeries, dataProjectionSteps, hasFinancialRecords, forecastingLocked]);
 
   const chartRowsForPlot = useMemo(
     () => filterForecastChartRowsByDateRange(mergedChartRows, startDate, endDate),
@@ -420,8 +421,9 @@ export function FinancialPerformanceSection({
       >
         <h2 className={styles.chartTitle}>Revenue, Expenses & Gross Profit</h2>
         <p className={styles.chartSubtitle}>
-          Projection uses your full monthly history (anchored after the latest month). The date range
-          only selects which months are shown on the chart.
+          {forecastingLocked ?
+            'Only historical values are shown. Trend projections are unavailable while forecasting is locked for your account.'
+          : 'Projection uses your full monthly history (anchored after the latest month). The date range only selects which months are shown on the chart.'}
         </p>
         <FilterBar
           variant="plain"
@@ -626,7 +628,7 @@ export function FinancialPerformanceSection({
             </div>
             {hasFinancialRecords ? (
               <>
-                {showProjectedSeries ? (
+                {showProjectedSeries && !forecastingLocked ? (
                   <DataChartProjectionFooter
                     period={period}
                     steps={dataProjectionSteps}
@@ -639,6 +641,7 @@ export function FinancialPerformanceSection({
                   chartData={chartData}
                   startDate={startDate}
                   endDate={endDate}
+                  forecastingLocked={forecastingLocked}
                 />
               </>
             ) : null}

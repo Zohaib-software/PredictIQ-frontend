@@ -12,7 +12,14 @@ import { ACCESS_TOKEN_KEY, clearTokens, setTokens } from '../api/tokenStorage.js
 import { clearChartCache } from '../utils/chartCache';
 
 const AuthContext = createContext(null);
-const normalizeUser = (user) => (user ? { ...user, role: user.role ?? 'user' } : null);
+const normalizeUser = (user) =>
+  user
+    ? {
+        ...user,
+        role: user.role ?? 'user',
+        forecastingAccessEnabled: user.forecastingAccessEnabled !== false,
+      }
+    : null;
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);

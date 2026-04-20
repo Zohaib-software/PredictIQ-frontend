@@ -29,6 +29,8 @@ import {
 } from '../../utils/chartSeriesRange';
 import { filterForecastChartRowsByDateRange } from '../../utils/forecastChartDisplay';
 import { useFinancialRecords } from '../../context/FinancialRecordsContext';
+import { useAuth } from '../../context/AuthContext';
+import { canUseForecastingTools } from '../../utils/forecastingAccess';
 import { parseMonthlyLabelToYm } from '../../utils/seriesProjection';
 import {
   computeSmallScreenDefaultIsoDatesFromMonthlyRecords,
@@ -79,7 +81,7 @@ function pearsonCorrelation(xs, ys) {
   return Math.max(-1, Math.min(1, numerator / denominator));
 }
 
-function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout }) {
+function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout, forecastingLocked }) {
   const prevAnomalyFocusRef = useRef(null);
   const [breakdownStartDate, setBreakdownStartDate] = useState('');
   const [breakdownEndDate, setBreakdownEndDate] = useState('');
@@ -560,11 +562,13 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout }) {
           title="Expense anomaly detection"
           subtitle="Monthly expense totals versus a trend line and upper/lower bands; months outside the bands are flagged as unusual spending."
           showProjectionControls={
+            !forecastingLocked &&
             !costsSummary.loading &&
             !costsSummary.error &&
             hasAnomalySlicedSeries &&
             anomalyShowProjectionUi
           }
+          forecastingLocked={forecastingLocked}
           loading={costsSummary.loading}
           error={costsSummary.error}
           hasData={hasAnomalySlicedSeries}
@@ -590,7 +594,7 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout }) {
                 endDate={anomalyEndDate}
                 projectionMonths={anomalyFilters.projectionMonths}
                 highlightPeriod={highlightPeriod}
-                enableProjection={anomalyShowProjectionUi}
+                enableProjection={anomalyShowProjectionUi && !forecastingLocked}
               />
             </div>
           ) : (
@@ -600,7 +604,7 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout }) {
               endDate={anomalyEndDate}
               projectionMonths={anomalyFilters.projectionMonths}
               highlightPeriod={highlightPeriod}
-              enableProjection={anomalyShowProjectionUi}
+              enableProjection={anomalyShowProjectionUi && !forecastingLocked}
             />
           )}
         </ChartCard>
@@ -618,11 +622,13 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout }) {
           title="Profit Margin % Over Time"
           subtitle="Gross profit as a percentage of revenue by month so you can see whether each pound of sales retains more or less profit over time."
           showProjectionControls={
+            !forecastingLocked &&
             !costsSummary.loading &&
             !costsSummary.error &&
             hasProfitMarginData &&
             profitMarginShowProjectionUi
           }
+          forecastingLocked={forecastingLocked}
           loading={costsSummary.loading}
           error={costsSummary.error}
           hasData={hasProfitMarginSlicedSeries}
@@ -647,7 +653,7 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout }) {
                 startDate={marginStartDate}
                 endDate={marginEndDate}
                 projectionMonths={marginFilters.projectionMonths}
-                enableProjection={profitMarginShowProjectionUi}
+                enableProjection={profitMarginShowProjectionUi && !forecastingLocked}
               />
             </div>
           ) : (
@@ -656,7 +662,7 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout }) {
               startDate={marginStartDate}
               endDate={marginEndDate}
               projectionMonths={marginFilters.projectionMonths}
-              enableProjection={profitMarginShowProjectionUi}
+              enableProjection={profitMarginShowProjectionUi && !forecastingLocked}
             />
           )}
         </ChartCard>
@@ -696,12 +702,14 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout }) {
           title="Expense vs Revenue Elasticity Curve"
           subtitle="Each point is one month’s paired expense and revenue change vs the prior month; the line is the regression fit (elasticity)."
           showProjectionControls={
+            !forecastingLocked &&
             !expenseRevenueElasticity.loading &&
             !expenseRevenueElasticity.error &&
             hasElasticityData &&
             elasticityShowProjectionUi &&
             (expenseRevenueElasticity.data?.period?.length ?? 0) >= 2
           }
+          forecastingLocked={forecastingLocked}
           loading={expenseRevenueElasticity.loading}
           error={expenseRevenueElasticity.error}
           hasData={hasElasticityData}
@@ -727,7 +735,7 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout }) {
                 startDate={elasticityStartDate}
                 endDate={elasticityEndDate}
                 projectionMonths={elasticityFilters.projectionMonths}
-                enableProjection={elasticityShowProjectionUi}
+                enableProjection={elasticityShowProjectionUi && !forecastingLocked}
               />
             </div>
           ) : (
@@ -736,7 +744,7 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout }) {
               startDate={elasticityStartDate}
               endDate={elasticityEndDate}
               projectionMonths={elasticityFilters.projectionMonths}
-              enableProjection={elasticityShowProjectionUi}
+              enableProjection={elasticityShowProjectionUi && !forecastingLocked}
             />
           )}
         </ChartCard>
@@ -745,7 +753,7 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout }) {
   );
 }
 
-function MarketingPerformanceTab({ narrowLayout }) {
+function MarketingPerformanceTab({ narrowLayout, forecastingLocked }) {
   const { hasFinancialRecords } = useFinancialRecords();
   const [adRevStartDate, setAdRevStartDate] = useState('');
   const [adRevEndDate, setAdRevEndDate] = useState('');
@@ -807,9 +815,9 @@ function MarketingPerformanceTab({ narrowLayout }) {
       buildAdSpendRevenueMergedChartRows(
         adSpendRevenue.data,
         adRevenueFilters.projectionMonths,
-        hasFinancialRecords
+        hasFinancialRecords && !forecastingLocked
       ),
-    [adSpendRevenue.data, adRevenueFilters.projectionMonths, hasFinancialRecords]
+    [adSpendRevenue.data, adRevenueFilters.projectionMonths, hasFinancialRecords, forecastingLocked]
   );
 
   const adSpendRevenueChartRows = useMemo(
@@ -828,7 +836,8 @@ function MarketingPerformanceTab({ narrowLayout }) {
       ),
     [adSpendRevenueChartRows]
   );
-  const showAdSpendRevenueProjectedSeries = mergedHasFutureProjection && displayHasAdRevProjection;
+  const showAdSpendRevenueProjectedSeries =
+    !forecastingLocked && mergedHasFutureProjection && displayHasAdRevProjection;
 
   const roiDisplay = useMemo(
     () => sliceAdSpendRoiData(adSpendRoi.data, null),
@@ -874,7 +883,8 @@ function MarketingPerformanceTab({ narrowLayout }) {
           filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Ad Spend vs Revenue"
           subtitle="Ad spend is the marketing portion of your total expenses. Projection uses full monthly history; the date range only selects which months are shown."
-          showProjectionControls
+          showProjectionControls={!forecastingLocked}
+          forecastingLocked={forecastingLocked}
           loading={adSpendRevenue.loading}
           error={adSpendRevenue.error}
           hasData={hasAdSpendRevenueData}
@@ -984,6 +994,8 @@ function MarketingPerformanceTab({ narrowLayout }) {
 }
 
 export function ReportsPage() {
+  const { user } = useAuth();
+  const forecastingLocked = !canUseForecastingTools(user);
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('cost');
   const [highlightPeriod, setHighlightPeriod] = useState(null);
@@ -1064,9 +1076,10 @@ export function ReportsPage() {
           highlightPeriod={highlightPeriod}
           anomalyFocusKey={anomalyFocusKey}
           narrowLayout={narrowLayout}
+          forecastingLocked={forecastingLocked}
         />
       ) : (
-        <MarketingPerformanceTab narrowLayout={narrowLayout} />
+        <MarketingPerformanceTab narrowLayout={narrowLayout} forecastingLocked={forecastingLocked} />
       )}
     </motion.div>
   );

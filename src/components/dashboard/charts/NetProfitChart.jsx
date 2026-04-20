@@ -34,10 +34,15 @@ const NET_PROFIT_LEGEND_SHORT_LABELS = {
  * @param {number} projectionMonths
  * @param {'daily'|'weekly'|'monthly'|'yearly'} periodType - bucket style for projection x-axis labels
  */
-export function NetProfitChart({ data, projectionMonths = 1, periodType = 'monthly' }) {
+export function NetProfitChart({
+  data,
+  projectionMonths = 1,
+  periodType = 'monthly',
+  allowTrendProjection = true,
+}) {
   const { reducedMotionEnabled } = useReducedMotionSetting();
   const { hasFinancialRecords } = useFinancialRecords();
-  const projectionActive = hasFinancialRecords;
+  const projectionActive = allowTrendProjection && hasFinancialRecords;
   const [hiddenLegendIds, setHiddenLegendIds] = useState(() => new Set());
 
   const onNetLegendClick = useCallback((e) => {

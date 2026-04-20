@@ -16,6 +16,8 @@ export function FilterBar({
   /** default: boxed bar; embedded: under ChartCard title; plain: no inner card (inside chart section) */
   variant = 'default',
   extraContent = null,
+  /** `end`: right-aligned (e.g. Transactions sort). `inline`: immediately after Reset filters (e.g. admin Refresh). */
+  extraContentPlacement = 'end',
   /** Shorter label on tight mobile rows (e.g. Reports). */
   resetLabel = 'Reset filters',
 }) {
@@ -82,29 +84,56 @@ export function FilterBar({
         <span className={styles.dateRangeLabel} aria-hidden="true">
           {'\u00a0'}
         </span>
-        <button
-          type="button"
-          className={`${styles.resetFilters} ${resetSuccess ? styles.resetFiltersSuccess : ''}`}
-          onClick={handleResetClick}
-        >
-          <span
-            className={`${styles.resetFiltersLabel} ${
-              resetSuccess ? styles.resetFiltersLabelHidden : ''
-            }`}
+        {extraContent != null && extraContentPlacement === 'inline' ? (
+          <div className={styles.filterBarActionsRow}>
+            <button
+              type="button"
+              className={`${styles.resetFilters} ${resetSuccess ? styles.resetFiltersSuccess : ''}`}
+              onClick={handleResetClick}
+            >
+              <span
+                className={`${styles.resetFiltersLabel} ${
+                  resetSuccess ? styles.resetFiltersLabelHidden : ''
+                }`}
+              >
+                {resetLabel}
+              </span>
+              <span
+                className={`${styles.resetFiltersTick} ${
+                  resetSuccess ? styles.resetFiltersTickVisible : ''
+                }`}
+                aria-hidden="true"
+              >
+                ✓
+              </span>
+            </button>
+            {extraContent}
+          </div>
+        ) : (
+          <button
+            type="button"
+            className={`${styles.resetFilters} ${resetSuccess ? styles.resetFiltersSuccess : ''}`}
+            onClick={handleResetClick}
           >
-            {resetLabel}
-          </span>
-          <span
-            className={`${styles.resetFiltersTick} ${
-              resetSuccess ? styles.resetFiltersTickVisible : ''
-            }`}
-            aria-hidden="true"
-          >
-            ✓
-          </span>
-        </button>
+            <span
+              className={`${styles.resetFiltersLabel} ${
+                resetSuccess ? styles.resetFiltersLabelHidden : ''
+              }`}
+            >
+              {resetLabel}
+            </span>
+            <span
+              className={`${styles.resetFiltersTick} ${
+                resetSuccess ? styles.resetFiltersTickVisible : ''
+              }`}
+              aria-hidden="true"
+            >
+              ✓
+            </span>
+          </button>
+        )}
       </div>
-      {extraContent ? (
+      {extraContent != null && extraContentPlacement === 'end' ? (
         <div className={styles.filtersBarRightControls}>{extraContent}</div>
       ) : null}
     </div>

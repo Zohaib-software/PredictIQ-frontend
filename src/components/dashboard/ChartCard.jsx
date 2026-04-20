@@ -21,6 +21,8 @@ export function ChartCard({
   showProjectionControls = false,
   projectionMonths = 1,
   onProjectionChange = null,
+  /** When true, trend projection controls are hidden and cannot be used. */
+  forecastingLocked = false,
 }) {
   const { loadingRecords, hasFinancialRecords } = useFinancialRecords();
   // Global no-records state must always prevent chart rendering.
@@ -28,7 +30,11 @@ export function ChartCard({
   const showChartNoData =
     !showNoRecords && !loadingRecords && !loading && !error && !hasData;
   const showTrendFooter =
-    showProjectionControls && hasFinancialRecords && hasData && onProjectionChange;
+    showProjectionControls &&
+    !forecastingLocked &&
+    hasFinancialRecords &&
+    hasData &&
+    onProjectionChange;
 
   const showHeaderRow =
     (!flatLayout && (title || subtitle || (actions && !showNoRecords))) ||

@@ -18,9 +18,13 @@ import { ForecastingPage } from './pages/dashboard/ForecastingPage';
 import { NotificationsPage } from './pages/dashboard/NotificationsPage';
 import { TransactionsPage } from './pages/dashboard/TransactionsPage';
 import { SettingsPage } from './pages/dashboard/SettingsPage';
-import { AdminPage } from './pages/dashboard/AdminPage';
+import { AdminLayout } from './pages/dashboard/admin/AdminLayout';
+import { AdminUsersPage } from './pages/dashboard/admin/AdminUsersPage';
+import { AdminLogsPage } from './pages/dashboard/admin/AdminLogsPage';
+import { AdminFeedbackPage } from './pages/dashboard/admin/AdminFeedbackPage';
 import { ErrorPage } from './pages/ErrorPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { FeedbackWidget } from './components/common/FeedbackWidget';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -68,6 +72,7 @@ export default function App() {
                   <a href="#main-content" className="skip-link">
                     Skip to main content
                   </a>
+                  <FeedbackWidget />
                   <Routes>
                     <Route path="/" element={<Layout />}>
                       <Route index element={<HomePage />} />
@@ -101,7 +106,19 @@ export default function App() {
                       <Route path="reports" element={<ReportsPage />} />
                       <Route path="notifications" element={<NotificationsPage />} />
                       <Route path="transactions" element={<TransactionsPage />} />
-                      <Route path="admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
+                      <Route
+                        path="admin"
+                        element={
+                          <AdminRoute>
+                            <AdminLayout />
+                          </AdminRoute>
+                        }
+                      >
+                        <Route index element={<Navigate to="users" replace />} />
+                        <Route path="users" element={<AdminUsersPage />} />
+                        <Route path="logs" element={<AdminLogsPage />} />
+                        <Route path="feedback" element={<AdminFeedbackPage />} />
+                      </Route>
                       <Route path="data" element={<Navigate to="/transactions" replace />} />
                       <Route path="costs" element={<Navigate to="/reports" replace />} />
                       <Route path="marketing" element={<Navigate to="/reports" replace />} />

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { forecastApi } from '../../api/forecastApi';
 import { getFinancialData } from '../../api/dataApi';
@@ -13,10 +14,15 @@ import {
   getForecastAccuracyMapeTone,
 } from '../../utils/displayFormat';
 import { filterForecastChartRowsByDateRange } from '../../utils/forecastChartDisplay';
+import { useAuth } from '../../context/AuthContext';
+import { canUseForecastingTools, getForecastingLockReason } from '../../utils/forecastingAccess';
 import styles from './DashboardPages.module.css';
 import chartLayoutStyles from './DataPage.module.css';
 
 export function ForecastingPage() {
+  const { user } = useAuth();
+  const canForecast = canUseForecastingTools(user);
+  const lockReason = getForecastingLockReason(user);
   const fin = useOverviewFinancialAggregates();
   const [narrowLayout, setNarrowLayout] = useState(false);
   const [horizon, setHorizon] = useState(3);
@@ -32,6 +38,10 @@ export function ForecastingPage() {
   });
 
   useEffect(() => {
+    if (!canForecast) {
+      setForecastState({ loading: false, error: null, data: null });
+      return () => {};
+    }
     let active = true;
     setForecastState((prev) => ({ ...prev, loading: true, error: null }));
     forecastApi.cashFlow({ horizon, period: 'monthly' })
@@ -50,9 +60,13 @@ export function ForecastingPage() {
     return () => {
       active = false;
     };
-  }, [horizon]);
+  }, [horizon, canForecast]);
 
   useEffect(() => {
+    if (!canForecast) {
+      setFullSeriesState({ loading: false, error: null, records: [] });
+      return () => {};
+    }
     let active = true;
     setFullSeriesState((prev) => ({ ...prev, loading: true, error: null }));
     getFinancialData({ period: 'monthly' })
@@ -75,7 +89,7 @@ export function ForecastingPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [canForecast]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -204,6 +218,38 @@ export function ForecastingPage() {
         : accuracyMapeTone === 'bad'
           ? styles.forecastAccuracyMapeBad
           : '';
+
+  if (!canForecast) {
+    return (
+      <motion.div
+        className={styles.page}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.25 }}
+      >
+        <header className={styles.pageHeader}>
+          <h1 className={styles.pageTitle}>Forecasting</h1>
+        </header>
+        <div className={styles.forecastingLockedPanel} role="status">
+          <h2 className={styles.forecastingLockedTitle}>Forecasting is locked</h2>
+          <p className={styles.forecastingLockedText}>
+            {lockReason === 'admin' ?
+              'Forecasting tools have been disabled for your account by an administrator. Effective immediately, all model-based forecasting is turned off. Other areas of PredictIQ continue to show historical data only.'
+            : 'You have withdrawn consent for PredictIQ to process your financial data for forecasting. Effective immediately, all forecasting tools are turned off. Charts and reports show historical figures only; trend projections and model forecasts are unavailable until consent and access are restored.'}
+          </p>
+          <p className={styles.forecastingLockedHint}>
+            You can review or change consent under Settings → Data & uploads. If an administrator disabled
+            forecasting for your organisation, they must restore access before these tools return.
+          </p>
+          <div className={styles.forecastingLockedCtaWrap}>
+            <Link to="/settings/data-uploads" className={styles.forecastDownloadBtn}>
+              Open Data & uploads in Settings
+            </Link>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   const modelAccuracyCard = (
     <SummaryCard

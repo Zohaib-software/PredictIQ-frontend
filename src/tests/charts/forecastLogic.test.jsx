@@ -21,6 +21,22 @@ vi.mock('../../api/forecastApi', () => ({
   },
 }));
 
+vi.mock('../../context/AuthContext', () => ({
+  useAuth: () => ({
+    user: { consentGiven: true, forecastingAccessEnabled: true },
+    token: 'test-token',
+    loading: false,
+    isAuthenticated: true,
+    login: vi.fn(),
+    verifyTwoFactorLogin: vi.fn(),
+    completePasswordReset2fa: vi.fn(),
+    completePasswordResetEmail: vi.fn(),
+    register: vi.fn(),
+    logout: vi.fn(),
+    updateUser: vi.fn(),
+  }),
+}));
+
 vi.mock('recharts', () => {
   const passthrough = ({ children }) => <div>{children}</div>;
   return {

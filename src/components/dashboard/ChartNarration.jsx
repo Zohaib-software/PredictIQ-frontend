@@ -4,7 +4,7 @@ import origin from '../../api/apiOrigin.js';
 import styles from '../../pages/dashboard/DashboardPages.module.css';
 import settingsStyles from '../../pages/dashboard/SettingsPage.module.css';
 
-export function ChartNarration({ summary, chartData, startDate, endDate }) {
+export function ChartNarration({ summary, chartData, startDate, endDate, forecastingLocked = false }) {
   const [narration, setNarration] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -83,6 +83,10 @@ export function ChartNarration({ summary, chartData, startDate, endDate }) {
     chartData == null ||
     chartData.records == null
   ) {
+    return null;
+  }
+
+  if (forecastingLocked) {
     return null;
   }
 

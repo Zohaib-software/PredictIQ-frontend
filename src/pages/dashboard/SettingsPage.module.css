@@ -496,10 +496,43 @@
   margin-bottom: 0.55rem;
 }
 
+.twoFactorStepHeadingText {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.twoFactorStepHeadingText .controlTitle {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+@media (max-width: 900px) {
+  /* Optical: sit hyphen + title a touch lower vs the step pill without changing flex metrics. */
+  .twoFactorStepHeadingText {
+    transform: translateY(1px);
+  }
+
+  .backupCodesSetupHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .backupCodesSetupHeader .securityActions {
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+  }
+}
+
 .twoFactorStepTitle {
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--color-secondary-text);
+  min-width: 0;
+  line-height: 1.35;
 }
 
 .twoFactorQr {
@@ -540,11 +573,14 @@
 }
 
 .manualEntryKey {
-  display: inline-block;
-  margin-top: 0.25rem;
+  display: block;
+  margin-top: 0.35rem;
+  max-width: 100%;
   font-family: monospace;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
   word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .backupCodesPanel {
@@ -569,13 +605,6 @@
   border: 1px solid var(--color-border-light);
   background: var(--color-background);
   color: var(--color-primary-text);
-}
-
-.twoFactorHeaderRow {
-  display: flex;
-  align-items: baseline;
-  justify-content: flex-start;
-  gap: 0.35rem;
 }
 
 .twoFactorDash {
