@@ -847,6 +847,7 @@ export function SettingsPage() {
         scope: 'security-2fa',
         message: error?.message || 'Failed to disable two-factor authentication.',
       });
+      setModalType(null);
     } finally {
       setTwoFactorLoading(false);
     }

@@ -282,7 +282,10 @@ export async function disableTwoFactorApi(payload) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const err = new Error(data.message || 'Failed to disable two-factor authentication');
+    const firstValidationMessage = Array.isArray(data.errors) ? data.errors[0]?.message : null;
+    const err = new Error(
+      data.message || firstValidationMessage || 'Failed to disable two-factor authentication'
+    );
     err.status = res.status;
     err.errors = data.errors;
     throw err;
