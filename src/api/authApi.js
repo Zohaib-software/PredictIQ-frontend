@@ -267,11 +267,15 @@ export async function verifyTwoFactorSetupApi(code) {
   return data.data;
 }
 
-export async function disableTwoFactorApi(currentPassword) {
+export async function disableTwoFactorApi(payload) {
+  const body =
+    typeof payload === 'string'
+      ? { currentPassword: payload }
+      : { ...payload };
   const res = await fetchWithAuth(`${API_BASE}/2fa/disable`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ currentPassword }),
+    body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {

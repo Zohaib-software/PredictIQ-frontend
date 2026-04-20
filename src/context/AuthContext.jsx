@@ -19,6 +19,8 @@ const normalizeUser = (user) =>
         ...user,
         role: user.role ?? 'user',
         forecastingAccessEnabled: user.forecastingAccessEnabled !== false,
+        /** Backend omits before deploy; treat missing as true so 2FA disable still asks for password. */
+        hasPassword: user.hasPassword !== false,
       }
     : null;
 
