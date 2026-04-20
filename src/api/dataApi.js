@@ -73,6 +73,22 @@ export async function getFinancialRecordIds({ startDate, endDate, notesSearch } 
 }
 
 /**
+ * POST /api/data/records
+ * Body: { date, total_revenue, total_expenses, ad_spend, notes }
+ * Creates a new financial record for the current user.
+ */
+export async function createRecord(body) {
+  const res = await fetchWithAuth(`${API_BASE}/records`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.message || 'Failed to create record');
+  return data.data;
+}
+
+/**
  * PUT /api/data/:id
  * Body: { total_revenue, total_expenses, gross_profit, ad_spend, notes }
  * Returns updated record in response data.
