@@ -5,6 +5,7 @@ import {
   computeSmallScreenDefaultIsoDatesFromMonthlyRecords,
   matchesSmallScreenForDefaultChartDates,
 } from '../utils/smallScreenDefaultChartDateRange';
+import { isMissingFinancialDataApiError } from '../utils/chartDataErrors.js';
 
 const AGGREGATION_PERIOD = 'monthly';
 
@@ -39,7 +40,13 @@ export function useOverviewFinancialAggregates() {
       setSummary(data.summary || null);
       setError(null);
     } catch (err) {
-      setError(err?.message || 'Failed to load data');
+      if (isMissingFinancialDataApiError(err)) {
+        setChartData({ records: [], summary: null });
+        setSummary(null);
+        setError(null);
+      } else {
+        setError(err?.message || 'Failed to load data');
+      }
     } finally {
       setChartLoading(false);
       setLoading(false);

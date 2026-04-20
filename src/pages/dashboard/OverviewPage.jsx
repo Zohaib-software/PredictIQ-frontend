@@ -150,7 +150,7 @@ export function OverviewPage() {
               !forecast.error &&
               !loadingRecords &&
               !hasFinancialRecords && (
-              <p className={styles.forecastMuted}>{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
+              <p className={`${styles.forecastMuted} chart-empty-financial-copy`}>{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
             )}
             {!forecastingLocked &&
               !forecast.loading &&

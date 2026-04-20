@@ -129,7 +129,10 @@ export function ProfitMarginChart({
 
   if (!data?.date?.length) {
     return (
-      <div style={{ padding: 48, textAlign: 'center', color: 'var(--color-secondary-text)', fontSize: 14 }}>
+      <div
+        className="chart-empty-financial-copy"
+        style={{ padding: 48, color: 'var(--color-secondary-text)', fontSize: 14 }}
+      >
         {EMPTY_FINANCIAL_CHART_MESSAGE}
       </div>
     );
@@ -146,7 +149,10 @@ export function ProfitMarginChart({
   const hasAnyMargin = baseRows.some((s) => Number(s.profit_margin) !== 0);
   if (!hasAnyMargin) {
     return (
-      <div style={{ padding: 48, textAlign: 'center', color: 'var(--color-secondary-text)', fontSize: 14 }}>
+      <div
+        className="chart-empty-financial-copy"
+        style={{ padding: 48, color: 'var(--color-secondary-text)', fontSize: 14 }}
+      >
         {EMPTY_FINANCIAL_CHART_MESSAGE}
       </div>
     );

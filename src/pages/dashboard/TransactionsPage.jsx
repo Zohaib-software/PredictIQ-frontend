@@ -18,7 +18,7 @@ import {
   deleteRecord,
   deleteRecordsBulkAll,
 } from '../../api/dataApi';
-import { useFinancialRecords, EMPTY_FINANCIAL_CHART_MESSAGE } from '../../context/FinancialRecordsContext';
+import { useFinancialRecords } from '../../context/FinancialRecordsContext';
 import { DataChartProjectionFooter } from '../../components/dashboard/DataChartProjectionFooter';
 import { CSVUploadCard } from '../../components/dashboard/CSVUploadCard';
 import { FilterBar } from '../../components/dashboard/FilterBar';

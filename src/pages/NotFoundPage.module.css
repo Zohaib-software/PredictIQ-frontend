@@ -1,0 +1,82 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: var(--color-background);
+}
+
+.card {
+  width: min(520px, 100%);
+  padding: 2.25rem 2rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  background: var(--color-card-bg);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.code {
+  margin: 0 0 0.35rem;
+  font-size: clamp(2.5rem, 6vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--color-accent);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  color: var(--color-primary-text);
+}
+
+.message {
+  margin: 0.85rem 0 0;
+  color: var(--color-secondary-text);
+  line-height: 1.55;
+  font-size: 0.95rem;
+}
+
+.actions {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primaryAction {
+  background: var(--color-accent);
+  color: #06211b;
+  border: 1px solid transparent;
+}
+
+.primaryAction:hover {
+  background: var(--color-accent-hover);
+}
+
+.secondaryAction {
+  background: transparent;
+  color: var(--color-primary-text);
+  border: 1px solid var(--color-border-light);
+}
+
+.secondaryAction:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}

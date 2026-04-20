@@ -363,3 +363,12 @@ svg {
     outline-offset: 2px;
   }
 }
+
+/* Multiline “upload CSV” empty state for charts (uses \n in EMPTY_FINANCIAL_CHART_MESSAGE). */
+.chart-empty-financial-copy {
+  white-space: pre-line;
+  text-align: center;
+  max-width: 22rem;
+  margin-inline: auto;
+  line-height: 1.55;
+}

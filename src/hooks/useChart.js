@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useFinancialRecords } from '../context/FinancialRecordsContext';
 import { loadChartWithCache } from '../utils/chartCache';
+import { isMissingFinancialDataApiError } from '../utils/chartDataErrors.js';
 
 export { clearChartCache } from '../utils/chartCache';
 
@@ -79,7 +80,13 @@ export function useChart(fetcher, reloadDeps) {
         }
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message || 'Failed to load data');
+        if (cancelled) return;
+        if (isMissingFinancialDataApiError(err)) {
+          setData(null);
+          setError(null);
+          return;
+        }
+        setError(err.message || 'Failed to load data');
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -96,7 +103,14 @@ export function useChart(fetcher, reloadDeps) {
         const inferred = inferHasChartData(result);
         if (inferred === true) setFinancialRecordsPresence(true);
       })
-      .catch((err) => setError(err.message || 'Failed to load data'))
+      .catch((err) => {
+        if (isMissingFinancialDataApiError(err)) {
+          setData(null);
+          setError(null);
+          return;
+        }
+        setError(err.message || 'Failed to load data');
+      })
       .finally(() => setLoading(false));
   };
 

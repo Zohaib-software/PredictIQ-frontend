@@ -170,6 +170,12 @@
   font-size: 0.9rem;
 }
 
+.loadingHint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-secondary-text);
+}
+
 .spinner {
   width: 32px;
   height: 32px;

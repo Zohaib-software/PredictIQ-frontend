@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
-/** Shown in chart areas when the user has no financial records yet. */
-export const EMPTY_FINANCIAL_CHART_MESSAGE = 'Upload financial data to see analytics';
+/** Shown in chart areas when the user has no financial records yet (use with `.chart-empty-financial-copy` for line breaks). */
+export const EMPTY_FINANCIAL_CHART_MESSAGE =
+  'No financial data yet. Upload a CSV to see revenue,\nexpenses, and gross profit over time.';
 
 const FinancialRecordsContext = createContext(null);
 

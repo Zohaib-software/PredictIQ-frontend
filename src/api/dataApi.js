@@ -15,7 +15,11 @@ export async function getFinancialData({ period = 'monthly', startDate, endDate 
   const url = `${API_BASE}?${params.toString()}`;
   const res = await fetchWithAuth(url);
   const data = await res.json();
-  if (!res.ok) throw new Error(data?.message || 'Failed to load financial data');
+  if (!res.ok) {
+    const err = new Error(data?.message || 'Failed to load financial data');
+    err.status = res.status;
+    throw err;
+  }
   return { data: data.data };
 }
 

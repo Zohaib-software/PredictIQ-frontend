@@ -24,6 +24,7 @@ import { AdminUsersPage } from './pages/dashboard/admin/AdminUsersPage';
 import { AdminLogsPage } from './pages/dashboard/admin/AdminLogsPage';
 import { AdminFeedbackPage } from './pages/dashboard/admin/AdminFeedbackPage';
 import { ErrorPage } from './pages/ErrorPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { FeedbackWidget } from './components/common/FeedbackWidget';
 
@@ -127,7 +128,7 @@ export default function App() {
                       <Route path="marketing" element={<Navigate to="/reports" replace />} />
                       <Route path="analytics" element={<Navigate to="/forecasting" replace />} />
                     </Route>
-                    <Route path="*" element={<ErrorPage />} />
+                    <Route path="*" element={<NotFoundPage />} />
                   </Routes>
                 </ErrorBoundary>
               </BrowserRouter>

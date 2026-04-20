@@ -6,7 +6,11 @@ const API_BASE = `${origin}/api/charts`;
 async function fetchChart(endpoint) {
   const res = await fetchWithAuth(`${API_BASE}${endpoint}`);
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(json.message || 'Failed to load chart data');
+  if (!res.ok) {
+    const err = new Error(json.message || 'Failed to load chart data');
+    err.status = res.status;
+    throw err;
+  }
   return json.data;
 }
 

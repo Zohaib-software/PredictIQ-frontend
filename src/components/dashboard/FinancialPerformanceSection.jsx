@@ -435,17 +435,14 @@ export function FinancialPerformanceSection({
           idPrefix="revenue-chart-filter"
         />
         {!loadingRecords && !hasFinancialRecords ? (
-          <div className={styles.chartEmpty}>{EMPTY_FINANCIAL_CHART_MESSAGE}</div>
+          <div className={`${styles.chartEmpty} chart-empty-financial-copy`}>{EMPTY_FINANCIAL_CHART_MESSAGE}</div>
         ) : fullSeriesState.loading && !fullChartSeries.length ? (
           <div className={styles.chartSkeleton} />
         ) : fullChartSeries.length === 0 ? (
-          <div className={styles.chartEmpty}>
-            No financial data yet. Upload a CSV to see revenue, expenses, and gross profit over time.
-          </div>
+          <div className={`${styles.chartEmpty} chart-empty-financial-copy`}>{EMPTY_FINANCIAL_CHART_MESSAGE}</div>
         ) : chartRowsForPlot.length === 0 ? (
-          <div className={styles.chartEmpty}>
-            No financial data in the selected date range. Adjust the filters or reset to see the full
-            series.
+          <div className={`${styles.chartEmpty} chart-empty-financial-copy`}>
+            {`No financial data in the selected date range.\nAdjust the filters or reset to see the full series.`}
           </div>
         ) : (
           <div className={styles.chartWrap}>

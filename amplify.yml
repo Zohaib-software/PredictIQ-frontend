@@ -6,6 +6,10 @@ frontend:
       headers:
         - key: Cross-Origin-Opener-Policy
           value: same-origin-allow-popups
+  customRules:
+    - source: '/<*>'
+      target: '/index.html'
+      status: '404-200'
   phases:
     preBuild:
       commands:

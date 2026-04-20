@@ -18,7 +18,11 @@ const API_BASE = `${origin}/api/forecast`;
 async function fetchForecast(pathWithQuery) {
   const res = await fetchWithAuth(`${API_BASE}${pathWithQuery}`);
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(json.message || 'Failed to load forecast');
+  if (!res.ok) {
+    const err = new Error(json.message || 'Failed to load forecast');
+    err.status = res.status;
+    throw err;
+  }
   return json.data;
 }
 

@@ -78,12 +78,12 @@ export function ChartCard({
       )}
       {showNoRecords && (
         <div className={styles.empty} role="status">
-          <p>{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
+          <p className="chart-empty-financial-copy">{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
         </div>
       )}
       {!showNoRecords && (loadingRecords || loading) && (
         <div className={styles.empty} role="status">
-          <p>{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
+          <p className={styles.loadingHint}>Loading…</p>
         </div>
       )}
       {!showNoRecords && !loadingRecords && !loading && error && (
@@ -93,7 +93,7 @@ export function ChartCard({
       )}
       {showChartNoData && (
         <div className={styles.empty} role="status">
-          <p>{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
+          <p className="chart-empty-financial-copy">{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
         </div>
       )}
       {!showNoRecords && !loadingRecords && !loading && !error && hasData &&
@@ -102,7 +102,7 @@ export function ChartCard({
             <div className={styles.chartPlotArea}>
               {children ?? (
                 <div className={styles.empty} role="status">
-                  <p>{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
+                  <p className="chart-empty-financial-copy">{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
                 </div>
               )}
             </div>
@@ -113,7 +113,7 @@ export function ChartCard({
         ) : (
           children ?? (
             <div className={styles.empty} role="status">
-              <p>{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
+              <p className="chart-empty-financial-copy">{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
             </div>
           )
         ))}
