@@ -259,15 +259,12 @@ export function SettingsPage() {
   const [sessionActionKey, setSessionActionKey] = useState('');
   const [twoFactorSetup, setTwoFactorSetup] = useState(null);
   const [twoFactorCode, setTwoFactorCode] = useState('');
-  const [twoFactorDisablePassword, setTwoFactorDisablePassword] = useState('');
   const [twoFactorDisableCode, setTwoFactorDisableCode] = useState('');
   const [twoFactorLoading, setTwoFactorLoading] = useState(false);
   const [backupCodes, setBackupCodes] = useState([]);
   const [twoFactorSetupPhase, setTwoFactorSetupPhase] = useState('idle'); // idle | setup | backupCodes
   const [backupActionState, setBackupActionState] = useState('');
   const isTwoFactorFeedback = feedback?.scope === 'security-2fa';
-  /** False only for Google-only accounts (no password); 2FA disable then uses TOTP / backup code. */
-  const disable2faUsesPassword = user?.hasPassword !== false;
   const isExportFeedback = feedback?.scope === 'data-export';
   const isNotificationsFeedback = feedback?.scope === 'notifications';
   const isSessionsFeedback = feedback?.scope === 'sessions-devices';
@@ -345,9 +342,8 @@ export function SettingsPage() {
     if (modalType === 'disable2fa') {
       return {
         title: 'Disable two-factor authentication',
-        message: disable2faUsesPassword
-          ? 'This removes the extra verification step for your account. If someone has your password, they will be able to sign in without an authenticator code.'
-          : 'This removes the extra verification step for your account. Anyone who can sign in with your Google account will no longer be asked for an authenticator code.',
+        message:
+          'This removes the extra verification step for your account. To continue, enter the authenticator code (or a backup code) from your 2FA setup.',
         confirmLabel: 'Disable 2FA',
       };
     }
@@ -362,7 +358,7 @@ export function SettingsPage() {
     }
 
     return null;
-  }, [modalType, disable2faUsesPassword]);
+  }, [modalType]);
 
   const refreshSessions = useCallback(async () => {
     setSessionsRefreshing(true);
@@ -811,16 +807,7 @@ export function SettingsPage() {
   };
 
   const handleDisableTwoFactor = async () => {
-    if (disable2faUsesPassword) {
-      if (!twoFactorDisablePassword) {
-        setFeedback({
-          type: 'error',
-          scope: 'security-2fa',
-          message: 'Enter your current password to disable two-factor authentication.',
-        });
-        return;
-      }
-    } else if (!twoFactorDisableCode.trim()) {
+    if (!twoFactorDisableCode.trim()) {
       setFeedback({
         type: 'error',
         scope: 'security-2fa',
@@ -832,14 +819,9 @@ export function SettingsPage() {
     setTwoFactorLoading(true);
     setFeedback(null);
     try {
-      const data = await disableTwoFactorApi(
-        disable2faUsesPassword
-          ? twoFactorDisablePassword
-          : { code: twoFactorDisableCode.trim() }
-      );
+      const data = await disableTwoFactorApi({ code: twoFactorDisableCode.trim() });
       setTwoFactorSetup(null);
       setTwoFactorCode('');
-      setTwoFactorDisablePassword('');
       setTwoFactorDisableCode('');
       setBackupCodes([]);
       setTwoFactorSetupPhase('idle');
@@ -872,16 +854,7 @@ export function SettingsPage() {
 
   const handleDisableTwoFactorSubmit = (event) => {
     event.preventDefault();
-    if (disable2faUsesPassword) {
-      if (!twoFactorDisablePassword) {
-        setFeedback({
-          type: 'error',
-          scope: 'security-2fa',
-          message: 'Enter your current password to disable two-factor authentication.',
-        });
-        return;
-      }
-    } else if (!twoFactorDisableCode.trim()) {
+    if (!twoFactorDisableCode.trim()) {
       setFeedback({
         type: 'error',
         scope: 'security-2fa',
@@ -1541,28 +1514,17 @@ export function SettingsPage() {
                         </div>
 
                         <form className={styles.twoFactorDisableForm} onSubmit={handleDisableTwoFactorSubmit}>
-                          {disable2faUsesPassword ? (
-                            <Input
-                              label="Current password"
-                              type="password"
-                              autoComplete="current-password"
-                              value={twoFactorDisablePassword}
-                              onChange={(event) => setTwoFactorDisablePassword(event.target.value)}
-                              required
-                            />
-                          ) : (
-                            <Input
-                              label="Authenticator or backup code"
-                              type="text"
-                              autoComplete="one-time-code"
-                              inputMode="numeric"
-                              autoCapitalize="off"
-                              spellCheck={false}
-                              value={twoFactorDisableCode}
-                              onChange={(event) => setTwoFactorDisableCode(event.target.value)}
-                              required
-                            />
-                          )}
+                          <Input
+                            label="Authenticator or backup code"
+                            type="text"
+                            autoComplete="one-time-code"
+                            inputMode="numeric"
+                            autoCapitalize="off"
+                            spellCheck={false}
+                            value={twoFactorDisableCode}
+                            onChange={(event) => setTwoFactorDisableCode(event.target.value)}
+                            required
+                          />
                           <div className={styles.securityActions}>
                             <button
                               type="submit"
@@ -2124,8 +2086,7 @@ export function SettingsPage() {
         onConfirm={handleModalConfirm}
         isConfirmDisabled={
           (isDeleteAccount && deleteConfirmText !== 'DELETE') ||
-          (isDisableTwoFactorModal &&
-            (disable2faUsesPassword ? !twoFactorDisablePassword : !twoFactorDisableCode.trim()))
+          (isDisableTwoFactorModal && !twoFactorDisableCode.trim())
         }
         isConfirmLoading={actionLoading || (isDisableTwoFactorModal && twoFactorLoading)}
         confirmVariant="danger"
