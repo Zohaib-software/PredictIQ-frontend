@@ -32,8 +32,11 @@ export function getForecastTone(value, baseline) {
 
   const scale = Number.isFinite(baseline) ? Math.abs(Number(baseline)) : 0;
   if (scale <= 0) {
-    return numericValue > 0 ? 'positive' : 'amber';
+    if (numericValue === 0) return 'negative';
+    return 'positive';
   }
+
+  if (numericValue === 0) return 'negative';
 
   if (numericValue >= scale * 1.1) return 'positive';
   if (numericValue >= scale * 0.9) return 'amber';

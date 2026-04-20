@@ -101,7 +101,8 @@ describe('Forecasting feature logic', () => {
     expect(getForecastTone(12500, 1000)).toBe('positive');
     expect(getForecastTone(500, 1000)).toBe('amber');
     expect(getForecastTone(-200, 1000)).toBe('negative');
-    expect(getForecastTone(0, 1000)).toBe('amber');
+    expect(getForecastTone(0, 1000)).toBe('negative');
+    expect(getForecastTone(0, 0)).toBe('negative');
     expect(getForecastTone(1000, 1000)).toBe('amber');
   });
 

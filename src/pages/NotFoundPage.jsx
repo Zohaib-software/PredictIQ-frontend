@@ -26,13 +26,15 @@ export function NotFoundPage() {
               Go to dashboard
             </Link>
           ) : (
-            <Link to="/" className={styles.primaryAction}>
-              Go to home
-            </Link>
+            <>
+              <Link to="/" className={styles.primaryAction}>
+                Go to home
+              </Link>
+              <Link to="/login" className={styles.secondaryAction}>
+                Log in
+              </Link>
+            </>
           )}
-          <Link to="/login" className={styles.secondaryAction}>
-            Log in
-          </Link>
         </div>
       </section>
     </main>

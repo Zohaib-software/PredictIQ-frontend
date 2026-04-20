@@ -6,7 +6,8 @@ import { useChart } from '../../hooks/useChart';
 import { SummaryCard, ForecastSummaryWidget } from '../../components/dashboard/SummaryCard';
 import { FinancialPerformanceSection } from '../../components/dashboard/FinancialPerformanceSection';
 import { useOverviewFinancialAggregates } from '../../hooks/useOverviewFinancialAggregates';
-import { useFinancialRecords, EMPTY_FINANCIAL_CHART_MESSAGE } from '../../context/FinancialRecordsContext';
+import { useFinancialRecords } from '../../context/FinancialRecordsContext';
+import { CHART_EMPTY_CASH_FLOW_FORECAST } from '../../constants/chartEmptyMessages.js';
 import { useAuth } from '../../context/AuthContext';
 import { canUseForecastingTools, getForecastingLockReason } from '../../utils/forecastingAccess';
 import styles from './DashboardPages.module.css';
@@ -150,7 +151,7 @@ export function OverviewPage() {
               !forecast.error &&
               !loadingRecords &&
               !hasFinancialRecords && (
-              <p className={`${styles.forecastMuted} chart-empty-financial-copy`}>{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
+              <p className={`${styles.forecastMuted} chart-empty-financial-copy`}>{CHART_EMPTY_CASH_FLOW_FORECAST}</p>
             )}
             {!forecastingLocked &&
               !forecast.loading &&

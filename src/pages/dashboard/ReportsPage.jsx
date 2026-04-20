@@ -28,6 +28,16 @@ import {
   sliceProfitMarginData,
 } from '../../utils/chartSeriesRange';
 import { filterForecastChartRowsByDateRange } from '../../utils/forecastChartDisplay';
+import {
+  CHART_EMPTY_AD_SPEND_REVENUE,
+  CHART_EMPTY_AD_SPEND_ROI,
+  CHART_EMPTY_CORRELATION,
+  CHART_EMPTY_EFFICIENCY_FUNNEL,
+  CHART_EMPTY_ELASTICITY,
+  CHART_EMPTY_EXPENSE_ANOMALY,
+  CHART_EMPTY_PROFIT_MARGIN,
+  CHART_EMPTY_ROI_HISTOGRAM,
+} from '../../constants/chartEmptyMessages.js';
 import { useFinancialRecords } from '../../context/FinancialRecordsContext';
 import { useAuth } from '../../context/AuthContext';
 import { canUseForecastingTools } from '../../utils/forecastingAccess';
@@ -520,6 +530,7 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout, forec
         <ChartCard
           className={`${narrowLayout ? '' : pageStyles.twoColumnCard} ${styles.rowOneCellFill}`.trim()}
           flatLayout={narrowLayout}
+          emptyMessage={CHART_EMPTY_CORRELATION}
           filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Correlation Heatmap"
           subtitle="Pairwise correlation between revenue, total expenses, gross profit, and other expenses (total expenses minus the marketing portion). Stronger values mean those metrics tend to move together."
@@ -558,6 +569,7 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout, forec
         <ChartCard
           className={narrowLayout ? '' : pageStyles.fullWidthTallCard}
           flatLayout={narrowLayout}
+          emptyMessage={CHART_EMPTY_EXPENSE_ANOMALY}
           filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Expense anomaly detection"
           subtitle="Monthly expense totals versus a trend line and upper/lower bands; months outside the bands are flagged as unusual spending."
@@ -618,6 +630,7 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout, forec
         <ChartCard
           className={narrowLayout ? '' : pageStyles.twoColumnCard}
           flatLayout={narrowLayout}
+          emptyMessage={CHART_EMPTY_PROFIT_MARGIN}
           filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Profit Margin % Over Time"
           subtitle="Gross profit as a percentage of revenue by month so you can see whether each pound of sales retains more or less profit over time."
@@ -669,6 +682,7 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout, forec
         <ChartCard
           className={narrowLayout ? '' : pageStyles.twoColumnCard}
           flatLayout={narrowLayout}
+          emptyMessage={CHART_EMPTY_EFFICIENCY_FUNNEL}
           filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Efficiency Funnel"
           subtitle="Compares revenue with operating profit and net profit after all recorded costs so you can see how much revenue survives each stage."
@@ -698,6 +712,7 @@ function CostAnalysisTab({ highlightPeriod, anomalyFocusKey, narrowLayout, forec
         <ChartCard
           className={narrowLayout ? '' : pageStyles.fullWidthTallCard}
           flatLayout={narrowLayout}
+          emptyMessage={CHART_EMPTY_ELASTICITY}
           filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Expense vs Revenue Elasticity Curve"
           subtitle="Each point is one month’s paired expense and revenue change vs the prior month; the line is the regression fit (elasticity)."
@@ -880,6 +895,7 @@ function MarketingPerformanceTab({ narrowLayout, forecastingLocked }) {
         <ChartCard
           className={narrowLayout ? '' : pageStyles.fullWidthTallCard}
           flatLayout={narrowLayout}
+          emptyMessage={CHART_EMPTY_AD_SPEND_REVENUE}
           filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Ad Spend vs Revenue"
           subtitle="Ad spend is the marketing portion of your total expenses. Projection uses full monthly history; the date range only selects which months are shown."
@@ -930,6 +946,7 @@ function MarketingPerformanceTab({ narrowLayout, forecastingLocked }) {
         <ChartCard
           className={narrowLayout ? '' : pageStyles.twoColumnCard}
           flatLayout={narrowLayout}
+          emptyMessage={CHART_EMPTY_AD_SPEND_ROI}
           filtersBarGapPx={narrowLayout ? 6 : 10}
           title="Ad Spend ROI Efficiency"
           subtitle="Each bubble is a period: marketing spend on one axis, revenue on the other; bubble size is net profit (revenue minus all expenses, including ad)."
@@ -957,6 +974,7 @@ function MarketingPerformanceTab({ narrowLayout, forecastingLocked }) {
         <ChartCard
           className={narrowLayout ? '' : pageStyles.twoColumnCard}
           flatLayout={narrowLayout}
+          emptyMessage={CHART_EMPTY_ROI_HISTOGRAM}
           filtersBarGapPx={narrowLayout ? 6 : 10}
           title="ROI Distribution Histogram"
           subtitle="Distribution of net profit (after all expenses) per £ of tracked marketing spend. Ad spend is part of total expenses, not subtracted twice."

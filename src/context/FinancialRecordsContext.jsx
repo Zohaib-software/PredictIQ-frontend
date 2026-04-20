@@ -1,8 +1,8 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { CHART_EMPTY_GENERIC } from '../constants/chartEmptyMessages.js';
 
-/** Shown in chart areas when the user has no financial records yet (use with `.chart-empty-financial-copy` for line breaks). */
-export const EMPTY_FINANCIAL_CHART_MESSAGE =
-  'No financial data yet. Upload a CSV to see revenue,\nexpenses, and gross profit over time.';
+/** Re-export for older imports; prefer named constants from `constants/chartEmptyMessages.js`. */
+export const EMPTY_FINANCIAL_CHART_MESSAGE = CHART_EMPTY_GENERIC;
 
 const FinancialRecordsContext = createContext(null);
 

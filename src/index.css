@@ -364,7 +364,7 @@ svg {
   }
 }
 
-/* Multiline “upload CSV” empty state for charts (uses \n in EMPTY_FINANCIAL_CHART_MESSAGE). */
+/* Multiline chart empty states (strings with `\n` from `constants/chartEmptyMessages.js`). */
 .chart-empty-financial-copy {
   white-space: pre-line;
   text-align: center;

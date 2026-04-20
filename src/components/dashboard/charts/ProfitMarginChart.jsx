@@ -10,7 +10,8 @@ import {
   ResponsiveContainer,
   DefaultTooltipContent,
 } from 'recharts';
-import { useFinancialRecords, EMPTY_FINANCIAL_CHART_MESSAGE } from '../../../context/FinancialRecordsContext';
+import { useFinancialRecords } from '../../../context/FinancialRecordsContext';
+import { CHART_EMPTY_PROFIT_MARGIN } from '../../../constants/chartEmptyMessages.js';
 import { useReducedMotionSetting } from '../../../context/ReducedMotionContext';
 import { useLegendToggleGroups } from '../../../hooks/useLegendToggleGroups';
 import {
@@ -133,7 +134,7 @@ export function ProfitMarginChart({
         className="chart-empty-financial-copy"
         style={{ padding: 48, color: 'var(--color-secondary-text)', fontSize: 14 }}
       >
-        {EMPTY_FINANCIAL_CHART_MESSAGE}
+        {CHART_EMPTY_PROFIT_MARGIN}
       </div>
     );
   }
@@ -153,7 +154,7 @@ export function ProfitMarginChart({
         className="chart-empty-financial-copy"
         style={{ padding: 48, color: 'var(--color-secondary-text)', fontSize: 14 }}
       >
-        {EMPTY_FINANCIAL_CHART_MESSAGE}
+        {CHART_EMPTY_PROFIT_MARGIN}
       </div>
     );
   }

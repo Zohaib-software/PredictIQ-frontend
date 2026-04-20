@@ -4,6 +4,7 @@ import { FilterBar } from './FilterBar';
 import { ExpenseVolatilityGauge } from './charts/ExpenseVolatilityGauge';
 import { CostBreakdownChart } from './charts/CostBreakdownChart';
 import { costBreakdownIsOnlyUncategorizedOperating } from '../../utils/costBreakdownLabels';
+import { CHART_EMPTY_EXPENSE_VOLATILITY_AND_BREAKDOWN } from '../../constants/chartEmptyMessages.js';
 import chartLayoutStyles from '../../pages/dashboard/DataPage.module.css';
 import reportsChartStyles from '../../pages/dashboard/ReportsPage.module.css';
 import chartCardStyles from './ChartCard.module.css';
@@ -30,6 +31,7 @@ export function CostViewToggleCard({
   breakdownEndDate,
   onBreakdownEndDateChange,
   onResetBreakdownDateRange,
+  emptyMessage = CHART_EMPTY_EXPENSE_VOLATILITY_AND_BREAKDOWN,
 }) {
   const [activeView, setActiveView] = useState('volatility');
   const showVolatility = activeView === 'volatility';
@@ -187,6 +189,7 @@ export function CostViewToggleCard({
       <ChartCard
         className={className}
         flatLayout={narrowLayout}
+        emptyMessage={emptyMessage}
         filtersBarGapPx={narrowLayout ? 6 : 10}
         title={narrowLayout ? '' : title}
         subtitle={narrowLayout ? '' : subtitle}

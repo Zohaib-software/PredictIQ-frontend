@@ -8,6 +8,7 @@ import { FilterBar } from '../../components/dashboard/FilterBar';
 import { ForecastVsHistoricalChart } from '../../components/dashboard/charts/ForecastVsHistoricalChart';
 import { useOverviewFinancialAggregates } from '../../hooks/useOverviewFinancialAggregates';
 import { SummaryCard, ForecastSummaryWidget } from '../../components/dashboard/SummaryCard';
+import { CHART_EMPTY_FORECAST_VS_HISTORICAL } from '../../constants/chartEmptyMessages.js';
 import {
   formatGbpCompact,
   formatPercentPoints,
@@ -327,6 +328,7 @@ export function ForecastingPage() {
           <ChartCard
             className={narrowLayout ? '' : styles.fullWidthTallCard}
             flatLayout={narrowLayout}
+            emptyMessage={CHART_EMPTY_FORECAST_VS_HISTORICAL}
             title={narrowLayout ? '' : 'Forecast vs Historical Chart'}
             subtitle={
               narrowLayout ?

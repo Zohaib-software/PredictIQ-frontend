@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { useFinancialRecords, EMPTY_FINANCIAL_CHART_MESSAGE } from '../../context/FinancialRecordsContext';
+import { useFinancialRecords } from '../../context/FinancialRecordsContext';
+import { CHART_EMPTY_GENERIC } from '../../constants/chartEmptyMessages.js';
 import { TrendProjectionControls } from './TrendProjectionControls';
 import styles from './ChartCard.module.css';
 
@@ -10,6 +11,8 @@ export function ChartCard({
   loading,
   error,
   hasData = true,
+  /** Multiline empty state (`\n` for line breaks). */
+  emptyMessage = CHART_EMPTY_GENERIC,
   className = '',
   /** Strip outer card chrome (e.g. Forecasting on mobile — full-width chart like Overview). */
   flatLayout = false,
@@ -78,7 +81,7 @@ export function ChartCard({
       )}
       {showNoRecords && (
         <div className={styles.empty} role="status">
-          <p className="chart-empty-financial-copy">{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
+          <p className="chart-empty-financial-copy">{emptyMessage}</p>
         </div>
       )}
       {!showNoRecords && (loadingRecords || loading) && (
@@ -93,7 +96,7 @@ export function ChartCard({
       )}
       {showChartNoData && (
         <div className={styles.empty} role="status">
-          <p className="chart-empty-financial-copy">{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
+          <p className="chart-empty-financial-copy">{emptyMessage}</p>
         </div>
       )}
       {!showNoRecords && !loadingRecords && !loading && !error && hasData &&
@@ -102,7 +105,7 @@ export function ChartCard({
             <div className={styles.chartPlotArea}>
               {children ?? (
                 <div className={styles.empty} role="status">
-                  <p className="chart-empty-financial-copy">{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
+                  <p className="chart-empty-financial-copy">{emptyMessage}</p>
                 </div>
               )}
             </div>
@@ -113,7 +116,7 @@ export function ChartCard({
         ) : (
           children ?? (
             <div className={styles.empty} role="status">
-              <p className="chart-empty-financial-copy">{EMPTY_FINANCIAL_CHART_MESSAGE}</p>
+              <p className="chart-empty-financial-copy">{emptyMessage}</p>
             </div>
           )
         ))}

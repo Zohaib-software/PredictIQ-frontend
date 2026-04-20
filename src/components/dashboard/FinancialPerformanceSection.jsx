@@ -11,7 +11,11 @@ import {
   DefaultTooltipContent,
 } from 'recharts';
 import { getFinancialData } from '../../api/dataApi';
-import { useFinancialRecords, EMPTY_FINANCIAL_CHART_MESSAGE } from '../../context/FinancialRecordsContext';
+import { useFinancialRecords } from '../../context/FinancialRecordsContext';
+import {
+  CHART_EMPTY_DATE_RANGE_FILTERS,
+  CHART_EMPTY_REVENUE_EXPENSES_GROSS,
+} from '../../constants/chartEmptyMessages.js';
 import { useReducedMotionSetting } from '../../context/ReducedMotionContext';
 import { DataChartProjectionFooter } from './DataChartProjectionFooter';
 import { ChartNarration } from './ChartNarration';
@@ -435,15 +439,13 @@ export function FinancialPerformanceSection({
           idPrefix="revenue-chart-filter"
         />
         {!loadingRecords && !hasFinancialRecords ? (
-          <div className={`${styles.chartEmpty} chart-empty-financial-copy`}>{EMPTY_FINANCIAL_CHART_MESSAGE}</div>
+          <div className={`${styles.chartEmpty} chart-empty-financial-copy`}>{CHART_EMPTY_REVENUE_EXPENSES_GROSS}</div>
         ) : fullSeriesState.loading && !fullChartSeries.length ? (
           <div className={styles.chartSkeleton} />
         ) : fullChartSeries.length === 0 ? (
-          <div className={`${styles.chartEmpty} chart-empty-financial-copy`}>{EMPTY_FINANCIAL_CHART_MESSAGE}</div>
+          <div className={`${styles.chartEmpty} chart-empty-financial-copy`}>{CHART_EMPTY_REVENUE_EXPENSES_GROSS}</div>
         ) : chartRowsForPlot.length === 0 ? (
-          <div className={`${styles.chartEmpty} chart-empty-financial-copy`}>
-            {`No financial data in the selected date range.\nAdjust the filters or reset to see the full series.`}
-          </div>
+          <div className={`${styles.chartEmpty} chart-empty-financial-copy`}>{CHART_EMPTY_DATE_RANGE_FILTERS}</div>
         ) : (
           <div className={styles.chartWrap}>
             <div className={styles.chartPlot}>
