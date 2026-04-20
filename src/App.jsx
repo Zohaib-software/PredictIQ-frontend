@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { MotionConfig } from 'framer-motion';
 import { useAuth } from './context/AuthContext';
 import { AuthProvider } from './context/AuthContext';
@@ -48,8 +49,10 @@ function AdminRoute({ children }) {
   );
 }
 
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
 export default function App() {
-  return (
+  const tree = (
     <ThemeProvider>
       {/*
         Fixed `user` only: do not tie MotionConfig to the in-app reduced-motion toggle. Changing
@@ -133,5 +136,11 @@ export default function App() {
         </ReducedMotionProvider>
       </MotionConfig>
     </ThemeProvider>
+  );
+
+  return googleClientId ? (
+    <GoogleOAuthProvider clientId={googleClientId}>{tree}</GoogleOAuthProvider>
+  ) : (
+    tree
   );
 }

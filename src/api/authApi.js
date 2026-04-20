@@ -41,6 +41,29 @@ export async function register({ businessName, email, phoneNumber, password }) {
  * @returns {Promise<{ user: object, token: string, refreshToken: string }>}
  * @throws {ApiError}
  */
+/**
+ * Sign in or register with a Google ID token (`credential` from GoogleLogin).
+ * @param {{ credential: string }} payload
+ * @returns {Promise<{ user: object, token: string, refreshToken: string } | { requiresTwoFactor: true, twoFactorToken: string, identifier?: string }>}
+ */
+export async function loginWithGoogle({ credential }) {
+  const deviceId = getOrCreateTrustedDeviceId();
+  const res = await fetch(`${API_BASE}/google`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ credential, deviceId }),
+  });
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    const err = new Error(data.message || 'Google sign-in failed');
+    err.status = res.status;
+    err.errors = data.errors;
+    throw err;
+  }
+  return data.data;
+}
+
 export async function login({ identifier, password }) {
   const deviceId = getOrCreateTrustedDeviceId();
   const res = await fetch(`${API_BASE}/login`, {

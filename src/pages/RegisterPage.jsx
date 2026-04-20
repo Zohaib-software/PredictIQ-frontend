@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Alert } from '../components/Alert';
+import { GoogleAuthButton, isGoogleAuthConfigured } from '../components/auth/GoogleAuthButton';
 import styles from './AuthPage.module.css';
 
 const initialForm = { businessName: '', email: '', phoneNumber: '', password: '', confirmPassword: '' };
@@ -41,8 +42,33 @@ export function RegisterPage() {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  const handleGoogleSuccess = async (credential) => {
+    setApiError('');
+    setSubmitting(true);
+    try {
+      const result = await loginWithGoogle(credential);
+      if (result?.requiresTwoFactor) {
+        navigate('/login', {
+          replace: true,
+          state: {
+            googleTwoFactorPending: {
+              twoFactorToken: result.twoFactorToken,
+              identifier: result.identifier ?? '',
+            },
+          },
+        });
+        return;
+      }
+      navigate('/overview', { replace: true });
+    } catch (err) {
+      setApiError(err.message || 'Google sign-in failed');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -105,12 +131,24 @@ export function RegisterPage() {
         <p className={styles.subtitle}>
           Start forecasting with PredictIQ. Enter your business details below.
         </p>
+        {apiError && (
+          <Alert variant="error" className={styles.alert}>
+            {apiError}
+          </Alert>
+        )}
+        {isGoogleAuthConfigured() && (
+          <div className={styles.oauthBlock}>
+            <GoogleAuthButton
+              onSuccess={handleGoogleSuccess}
+              onError={() => setApiError('Google sign-in was cancelled or failed')}
+              disabled={submitting}
+            />
+            <div className={styles.oauthDivider}>
+              <span>or register with email</span>
+            </div>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className={styles.form} noValidate>
-          {apiError && (
-            <Alert variant="error" className={styles.alert}>
-              {apiError}
-            </Alert>
-          )}
           <Input
             label="Business name"
             name="businessName"

@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import * as yup from 'yup';
 import { useAuth } from '../context/AuthContext';
 import { requestPasswordResetEmail, verifyPasswordReset2fa } from '../api/authApi';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Alert } from '../components/Alert';
+import { GoogleAuthButton, isGoogleAuthConfigured } from '../components/auth/GoogleAuthButton';
 import styles from './AuthPage.module.css';
 
 const initialForm = { identifier: '', password: '' };
@@ -53,8 +54,45 @@ export function LoginPage() {
   const [emailResetSent, setEmailResetSent] = useState(false);
   const [emailResetMessage, setEmailResetMessage] = useState('');
   const [reset2faVerificationToken, setReset2faVerificationToken] = useState(null);
-  const { login, verifyTwoFactorLogin, completePasswordReset2fa } = useAuth();
+  const { login, loginWithGoogle, verifyTwoFactorLogin, completePasswordReset2fa } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const pending = location.state?.googleTwoFactorPending;
+    if (pending?.twoFactorToken) {
+      setTwoFactorChallenge({
+        twoFactorToken: pending.twoFactorToken,
+        identifier: pending.identifier || '',
+      });
+      setTwoFactorForm(initialTwoFactorForm);
+      setErrors({});
+      setApiError('');
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.pathname, location.state, navigate]);
+
+  const handleGoogleSuccess = async (credential) => {
+    setApiError('');
+    setSubmitting(true);
+    try {
+      const result = await loginWithGoogle(credential);
+      if (result?.requiresTwoFactor) {
+        setTwoFactorChallenge({
+          twoFactorToken: result.twoFactorToken,
+          identifier: result.identifier ?? '',
+        });
+        setTwoFactorForm(initialTwoFactorForm);
+        setErrors({});
+        return;
+      }
+      navigate('/overview', { replace: true });
+    } catch (err) {
+      setApiError(err.message || 'Google sign-in failed');
+    } finally {
+      setSubmitting(false);
+    }
+  };
   const isTwoFactorStep = useMemo(() => Boolean(twoFactorChallenge?.twoFactorToken), [twoFactorChallenge]);
   const showForgotFlow = Boolean(resetSubView);
 
@@ -124,7 +162,7 @@ export function LoginPage() {
       if (result?.requiresTwoFactor) {
         setTwoFactorChallenge({
           twoFactorToken: result.twoFactorToken,
-          identifier,
+          identifier: result.identifier ?? identifier,
         });
         setTwoFactorForm(initialTwoFactorForm);
         setErrors({});
@@ -426,6 +464,19 @@ export function LoginPage() {
                   : 'Verify code'}
             </Button>
           </form>
+        )}
+
+        {!showForgotFlow && !isTwoFactorStep && isGoogleAuthConfigured() && (
+          <div className={styles.oauthBlock}>
+            <GoogleAuthButton
+              onSuccess={handleGoogleSuccess}
+              onError={() => setApiError('Google sign-in was cancelled or failed')}
+              disabled={submitting}
+            />
+            <div className={styles.oauthDivider}>
+              <span>or continue with email</span>
+            </div>
+          </div>
         )}
 
         {!showForgotFlow && (

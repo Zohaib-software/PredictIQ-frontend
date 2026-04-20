@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import {
   login as apiLogin,
+  loginWithGoogle as apiLoginWithGoogle,
   register as apiRegister,
   getMe,
   logoutApi,
@@ -103,6 +104,19 @@ export function AuthProvider({ children }) {
     return nextUser;
   }, [setToken]);
 
+  const loginWithGoogle = useCallback(async (credential) => {
+    const data = await apiLoginWithGoogle({ credential });
+    if (data?.requiresTwoFactor) {
+      return data;
+    }
+
+    const { user: u, token: newToken, refreshToken } = data;
+    setToken(newToken, refreshToken);
+    const nextUser = normalizeUser(u);
+    setUser(nextUser);
+    return nextUser;
+  }, [setToken]);
+
   const verifyTwoFactorLogin = useCallback(async (twoFactorToken, code) => {
     const data = await apiVerifyTwoFactorLogin({ twoFactorToken, code });
     const { user: u, token: newToken, refreshToken } = data;
@@ -162,6 +176,7 @@ export function AuthProvider({ children }) {
     loading,
     isAuthenticated: !!token,
     login,
+    loginWithGoogle,
     verifyTwoFactorLogin,
     completePasswordReset2fa,
     completePasswordResetEmail,

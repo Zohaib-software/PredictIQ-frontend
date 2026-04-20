@@ -72,6 +72,51 @@
   line-height: 1.5;
 }
 
+.oauthBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.oauthDivider {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0.15rem 0 0.35rem;
+  color: var(--color-secondary-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.oauthDivider::before,
+.oauthDivider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border-light);
+}
+
+.oauthDivider span {
+  flex-shrink: 0;
+  max-width: 70%;
+  text-align: center;
+  line-height: 1.25;
+}
+
+@media (max-width: 480px) {
+  .oauthDivider {
+    font-size: 0.72rem;
+    margin-top: 0.1rem;
+  }
+
+  .oauthDivider span {
+    max-width: 85%;
+  }
+}
+
 .form {
   display: flex;
   flex-direction: column;

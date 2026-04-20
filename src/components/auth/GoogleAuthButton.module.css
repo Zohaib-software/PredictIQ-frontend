@@ -1,0 +1,28 @@
+.wrap {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Let the Google iframe scale with the card on narrow screens */
+.wrap :global(> div) {
+  width: 100% !important;
+  max-width: 100%;
+}
+
+.wrap :global(iframe) {
+  max-width: 100% !important;
+}
+
+@media (max-width: 480px) {
+  .wrap {
+    min-height: 48px;
+  }
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.62;
+}
