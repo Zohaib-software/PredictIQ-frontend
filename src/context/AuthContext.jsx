@@ -178,7 +178,9 @@ export function AuthProvider({ children }) {
     user,
     token,
     loading,
-    isAuthenticated: !!token,
+    // Treat auth as established only after /me resolves to a valid user.
+    // This avoids running protected data effects from stale/local tokens on public pages.
+    isAuthenticated: !!user,
     login,
     loginWithGoogle,
     verifyTwoFactorLogin,
