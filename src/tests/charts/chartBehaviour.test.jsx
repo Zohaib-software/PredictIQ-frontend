@@ -70,6 +70,10 @@ vi.mock('recharts', () => {
 });
 
 describe('Dashboard chart behaviour', () => {
+  it('intentional branch-protection test failure', () => {
+    expect(1).toBe(2);
+  });
+
   runStandardChartTests(
     RevenueExpensesChart,
     mockChartData({
