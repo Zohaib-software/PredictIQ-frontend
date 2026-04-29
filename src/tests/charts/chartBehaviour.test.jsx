@@ -70,10 +70,6 @@ vi.mock('recharts', () => {
 });
 
 describe('Dashboard chart behaviour', () => {
-  it('branch protection smoke test - should fail', () => {
-    expect(1).toBe(2);
-  });
-
   runStandardChartTests(
     RevenueExpensesChart,
     mockChartData({
