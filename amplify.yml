@@ -1,20 +1,19 @@
 version: 1
 frontend:
+  # Note: SPA rewrite and trailing slash redirect rules are managed in Amplify Console > Rewrites and Redirects, not here.
   # FedCM / Google Sign-In uses postMessage; allow popups with opener (avoids COOP console errors).
   customHeaders:
     - pattern: '**/*'
       headers:
         - key: Cross-Origin-Opener-Policy
           value: same-origin-allow-popups
-  customRules:
-    - source: '/<*>'
-      target: '/index.html'
-      status: '404-200'
   phases:
     preBuild:
       commands:
         # Amplify may set NODE_ENV=production, which skips devDependencies (Vite lives there).
         - npm ci --include=dev
+        # Fail the deploy if automated tests fail.
+        - npm test
     build:
       commands:
         - npm run build

@@ -65,74 +65,81 @@ export default function App() {
       <MotionConfig reducedMotion="user">
         <ReducedMotionProvider>
           <AuthProvider>
-            <NotificationProvider>
-              <BrowserRouter
-                future={{
-                  v7_startTransition: true,
-                  v7_relativeSplatPath: true,
-                }}
-              >
-                <ErrorBoundary>
-                  <a href="#main-content" className="skip-link">
-                    Skip to main content
-                  </a>
-                  <FeedbackWidget />
-                  <Routes>
-                    <Route path="/" element={<Layout />}>
-                      <Route index element={<HomePage />} />
-                      <Route path="login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
-                      <Route path="register" element={<PublicOnlyRoute><RegisterPage /></PublicOnlyRoute>} />
-                      <Route path="reset-password" element={<ResetPasswordPage />} />
-                    </Route>
+            <BrowserRouter
+              future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true,
+              }}
+            >
+              <ErrorBoundary>
+                <a href="#main-content" className="skip-link">
+                  Skip to main content
+                </a>
+                <FeedbackWidget />
+                <Routes>
+                  <Route path="/" element={<Layout />}>
+                    <Route index element={<HomePage />} />
+                    <Route path="login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
+                    <Route path="register" element={<PublicOnlyRoute><RegisterPage /></PublicOnlyRoute>} />
+                    <Route path="reset-password" element={<ResetPasswordPage />} />
+                  </Route>
+                  <Route
+                    path="/settings"
+                    element={
+                      <ProtectedRoute>
+                        <FinancialRecordsProvider>
+                          <Navigate to="/settings/profile" replace />
+                        </FinancialRecordsProvider>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/settings/:section"
+                    element={
+                      <ProtectedRoute>
+                        <FinancialRecordsProvider>
+                          <SettingsPage />
+                        </FinancialRecordsProvider>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute>
+                        <NotificationProvider>
+                          <DashboardLayout />
+                        </NotificationProvider>
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route path="overview" element={<OverviewPage />} />
+                    <Route path="forecasting" element={<ForecastingPage />} />
+                    <Route path="reports" element={<ReportsPage />} />
+                    <Route path="notifications" element={<NotificationsPage />} />
+                    <Route path="transactions" element={<TransactionsPage />} />
                     <Route
-                      path="/settings"
+                      path="admin"
                       element={
-                        <ProtectedRoute>
-                          <FinancialRecordsProvider>
-                            <Navigate to="/settings/profile" replace />
-                          </FinancialRecordsProvider>
-                        </ProtectedRoute>
+                        <AdminRoute>
+                          <AdminLayout />
+                        </AdminRoute>
                       }
-                    />
-                    <Route
-                      path="/settings/:section"
-                      element={
-                        <ProtectedRoute>
-                          <FinancialRecordsProvider>
-                            <SettingsPage />
-                          </FinancialRecordsProvider>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                      <Route path="overview" element={<OverviewPage />} />
-                      <Route path="forecasting" element={<ForecastingPage />} />
-                      <Route path="reports" element={<ReportsPage />} />
-                      <Route path="notifications" element={<NotificationsPage />} />
-                      <Route path="transactions" element={<TransactionsPage />} />
-                      <Route
-                        path="admin"
-                        element={
-                          <AdminRoute>
-                            <AdminLayout />
-                          </AdminRoute>
-                        }
-                      >
-                        <Route index element={<Navigate to="users" replace />} />
-                        <Route path="users" element={<AdminUsersPage />} />
-                        <Route path="logs" element={<AdminLogsPage />} />
-                        <Route path="feedback" element={<AdminFeedbackPage />} />
-                      </Route>
-                      <Route path="data" element={<Navigate to="/transactions" replace />} />
-                      <Route path="costs" element={<Navigate to="/reports" replace />} />
-                      <Route path="marketing" element={<Navigate to="/reports" replace />} />
-                      <Route path="analytics" element={<Navigate to="/forecasting" replace />} />
+                    >
+                      <Route index element={<Navigate to="users" replace />} />
+                      <Route path="users" element={<AdminUsersPage />} />
+                      <Route path="logs" element={<AdminLogsPage />} />
+                      <Route path="feedback" element={<AdminFeedbackPage />} />
                     </Route>
-                    <Route path="*" element={<NotFoundPage />} />
-                  </Routes>
-                </ErrorBoundary>
-              </BrowserRouter>
-            </NotificationProvider>
+                    <Route path="data" element={<Navigate to="/transactions" replace />} />
+                    <Route path="costs" element={<Navigate to="/reports" replace />} />
+                    <Route path="marketing" element={<Navigate to="/reports" replace />} />
+                    <Route path="analytics" element={<Navigate to="/forecasting" replace />} />
+                  </Route>
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </ErrorBoundary>
+            </BrowserRouter>
           </AuthProvider>
         </ReducedMotionProvider>
       </MotionConfig>

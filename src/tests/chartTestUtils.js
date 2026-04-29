@@ -65,7 +65,9 @@ function collectRowTexts() {
 }
 
 function rowContainsValue(rowText, expectedValue) {
-  if (rowText.includes(expectedValue)) return true;
+  const rowTextLower = String(rowText).toLowerCase();
+  const expectedValueLower = String(expectedValue).toLowerCase();
+  if (rowTextLower.includes(expectedValueLower)) return true;
   const expectedNumber = Number(String(expectedValue).replace(/,/g, ''));
   if (!Number.isFinite(expectedNumber)) return false;
   return (
